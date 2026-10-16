@@ -1,127 +1,262 @@
-import { createField, sampleField } from "./field.js";
+import { createWorld, getTile, terrainDescription } from "./world.js";
 
-const canvas = document.querySelector("#world-field");
-const toggle = document.querySelector("#preview-toggle");
-const context = canvas?.getContext("2d", { alpha: false });
+const $ = (id) => document.getElementById(id);
+const canvas = $("world-field");
+const ctx = canvas && canvas.getContext("2d", { alpha: false });
+const playButton = $("preview-toggle");
+const presetInput = $("world-preset");
+const seedInput = $("world-seed");
+const speedInput = $("world-speed");
+const metrics = {
+  preset: $("metric-preset"), seed: $("metric-seed"), tiles: $("metric-tiles"),
+  water: $("metric-water"), resources: $("metric-resources"), zoom: $("metric-zoom"),
+  title: $("world-state-title"), subtitle: $("world-state-subtitle"),
+  coordinate: $("tile-coordinate"), tileName: $("tile-name"), tileDescription: $("tile-description")
+};
 
-if (canvas && context && toggle) {
-  const columns = 76;
-  const rows = 43;
-  const field = createField(columns, rows);
-  let animationId = 0;
+if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
+  let world = createWorld();
+  let camera = { x: 0, y: 0, zoom: 1 };
+  let selected = { x: 32, y: 18 };
   let paused = false;
-  let previousTime = 0;
+  let time = 0;
+  let last = 0;
+  let raf = 0;
+  let drag = null;
+  let dragged = false;
+  let reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const palette = {
-    void: "#0b1112",
-    deep: "#11251f",
-    green: "#245541",
-    mint: "#68ad83",
-    bright: "#a9edbd",
-    cyan: "#3d8c8e",
-    amber: "#b78b4f",
-    violet: "#57507e"
+  const colors = {
+    background: "#08100f",
+    water: ["#123b43", "#164a51", "#1d5660"],
+    shore: ["#9a805d", "#b1966c"],
+    moss: ["#285b45", "#2f6a4a", "#397653"],
+    meadow: ["#426c49", "#4c7950", "#557f56"],
+    rock: ["#515e59", "#616e66", "#69776c"],
+    crystal: ["#3b777b", "#4d9693", "#76c8bd"],
+    ash: ["#353d3b", "#414946", "#515957"],
+    resource: "#e4bd7d", flora: "#8cd49b", selected: "#e8ffef",
+    grid: "rgba(220,247,228,.11)"
   };
 
-  function draw(time) {
-    if (paused) return;
+  function transform(w, h) {
+    const scale = Math.max(2, Math.min(w / (world.width + 4), h / (world.height + 4)) * camera.zoom);
+    return { scale, left: w / 2 + camera.x - world.width * scale / 2, top: h / 2 + camera.y - world.height * scale / 2 };
+  }
+
+  function updateInspector() {
+    metrics.preset.textContent = world.preset.name.toUpperCase();
+    metrics.seed.textContent = String(world.seed);
+    metrics.tiles.textContent = world.tiles.length.toLocaleString();
+    metrics.water.textContent = world.counts.water.toLocaleString();
+    metrics.resources.textContent = world.counts.resources.toLocaleString();
+    metrics.zoom.textContent = Math.round(camera.zoom * 100) + "%";
+    metrics.title.textContent = "Preset world ready";
+    metrics.subtitle.textContent = world.preset.name + " · local viewer";
+    const tile = getTile(world, selected.x, selected.y);
+    const names = { water: "Water", shore: "Shoreline", moss: "Moss shelf", meadow: "Open meadow", rock: "Rock ridge", crystal: "Crystal outcrop", ash: "Ashen ground" };
+    metrics.coordinate.textContent = tile ? "x " + tile.x + " · y " + tile.y : "outside field";
+    metrics.tileName.textContent = tile ? (names[tile.terrain] || "Terrain tile") : "No tile selected";
+    metrics.tileDescription.textContent = terrainDescription(tile);
+  }
+
+  function draw(stamp = time) {
     const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = Math.max(1, Math.floor(rect.width * dpr));
-    const height = Math.max(1, Math.floor(rect.height * dpr));
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
-      canvas.height = height;
-    }
+    if (!rect.width || !rect.height) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const cw = Math.max(1, Math.floor(rect.width * dpr));
+    const ch = Math.max(1, Math.floor(rect.height * dpr));
+    if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = colors.background;
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    const view = transform(rect.width, rect.height);
+    const scale = view.scale;
+    const left = view.left;
+    const top = view.top;
 
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const w = rect.width;
-    const h = rect.height;
-    context.fillStyle = palette.void;
-    context.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(101,217,157,.035)";
+    for (let x = 0; x < rect.width; x += 28) for (let y = 0; y < rect.height; y += 28) ctx.fillRect(x, y, 1, 1);
 
-    const cellW = w / columns;
-    const cellH = h / rows;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const visualTime = reducedMotion ? 0 : time;
-
-    for (let y = 0; y < rows; y += 1) {
-      for (let x = 0; x < columns; x += 1) {
-        const value = sampleField(field, x, y, visualTime);
-        const ridge = Math.sin(x * 0.12 + y * 0.09);
-        let color = palette.void;
-        if (value > 0.69) color = ridge > 0.35 ? palette.bright : palette.mint;
-        else if (value > 0.57) color = ridge > 0.1 ? palette.green : palette.cyan;
-        else if (value > 0.46) color = ridge < -0.2 ? palette.violet : palette.deep;
-        else if (value > 0.37) color = palette.deep;
-
-        const pad = value > 0.60 ? 0.8 : 1.15;
-        context.globalAlpha = value > 0.6 ? 0.6 + value * 0.4 : 0.35 + value * 0.6;
-        context.fillStyle = color;
-        context.fillRect(x * cellW + pad, y * cellH + pad, Math.max(0, cellW - pad * 2), Math.max(0, cellH - pad * 2));
+    for (const tile of world.tiles) {
+      const x = left + tile.x * scale;
+      const y = top + tile.y * scale;
+      if (x + scale < 0 || y + scale < 0 || x > rect.width || y > rect.height) continue;
+      const variants = colors[tile.terrain] || colors.meadow;
+      const variant = Math.min(2, Math.floor(tile.variation * 3));
+      ctx.fillStyle = tile.terrain === "water"
+        ? colors.water[(variant + Math.floor(stamp * .01 + tile.x * .15 + tile.y * .07)) % colors.water.length]
+        : variants[variant % variants.length];
+      ctx.fillRect(x + .3, y + .3, Math.max(.5, scale - .65), Math.max(.5, scale - .65));
+      if (scale >= 7) {
+        ctx.fillStyle = "rgba(7,16,13,.16)";
+        ctx.fillRect(x + scale * .1, y + scale * .72, scale * .8, scale * .13);
+        ctx.fillStyle = "rgba(230,255,238,.08)";
+        ctx.fillRect(x + scale * .1, y + scale * .1, scale * .8, Math.max(.7, scale * .07));
+      }
+      if (tile.flora && scale >= 5) {
+        const px = x + scale * (.35 + tile.variation * .25);
+        const py = y + scale * (.3 + tile.variation * .2);
+        ctx.fillStyle = colors.flora;
+        ctx.globalAlpha = .75;
+        ctx.fillRect(px, py, Math.max(1, scale * .24), Math.max(1, scale * .4));
+        ctx.fillRect(px - scale * .1, py + scale * .05, Math.max(1, scale * .4), Math.max(1, scale * .14));
+        ctx.globalAlpha = 1;
+      }
+      if (tile.resource && scale >= 5) {
+        const cx = x + scale * .52, cy = y + scale * .52, r = Math.max(1.1, scale * .16);
+        ctx.fillStyle = colors.resource;
+        ctx.fillRect(cx - r, cy - r * 1.5, r * 2, r * 3);
+        ctx.fillRect(cx - r * 1.5, cy - r, r * 3, r * 2);
       }
     }
-    context.globalAlpha = 1;
-
-    // Fine guide lines make the grid legible as a field-study interface.
-    context.strokeStyle = "rgba(145, 206, 174, 0.065)";
-    context.lineWidth = 0.5;
-    for (let x = 0; x <= columns; x += 4) {
-      context.beginPath();
-      context.moveTo(x * cellW, 0);
-      context.lineTo(x * cellW, h);
-      context.stroke();
+    if (scale > 5) {
+      ctx.strokeStyle = colors.grid;
+      ctx.lineWidth = .45;
+      ctx.beginPath();
+      for (let x = 0; x <= world.width; x++) { const px = left + x * scale; ctx.moveTo(px, top); ctx.lineTo(px, top + world.height * scale); }
+      for (let y = 0; y <= world.height; y++) { const py = top + y * scale; ctx.moveTo(left, py); ctx.lineTo(left + world.width * scale, py); }
+      ctx.stroke();
     }
-    for (let y = 0; y <= rows; y += 4) {
-      context.beginPath();
-      context.moveTo(0, y * cellH);
-      context.lineTo(w, y * cellH);
-      context.stroke();
+    const tile = getTile(world, selected.x, selected.y);
+    if (tile) {
+      ctx.strokeStyle = colors.selected; ctx.lineWidth = 1.5;
+      ctx.strokeRect(left + tile.x * scale + 1, top + tile.y * scale + 1, Math.max(0, scale - 2), Math.max(0, scale - 2));
+      ctx.fillStyle = "rgba(220,255,232,.09)";
+      ctx.fillRect(left + tile.x * scale, top + tile.y * scale, scale, scale);
     }
+  }
 
-    // This sweeping line is purely decorative; it is not a simulated agent or a world event.
-    const sweepX = ((visualTime * 0.012) % (w + 90)) - 45;
-    const gradient = context.createLinearGradient(sweepX - 45, 0, sweepX + 45, 0);
-    gradient.addColorStop(0, "rgba(181,245,201,0)");
-    gradient.addColorStop(0.5, "rgba(181,245,201,0.07)");
-    gradient.addColorStop(1, "rgba(181,245,201,0)");
-    context.fillStyle = gradient;
-    context.fillRect(sweepX - 45, 0, 90, h);
+  function requestDraw() {
+    if (paused || reducedMotion || document.hidden) {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => { draw(time); raf = 0; });
+    } else draw(time);
+  }
 
-    if (!reducedMotion) animationId = window.requestAnimationFrame(draw);
-    previousTime = time;
+  function tick(stamp) {
+    if (paused || document.hidden) { raf = 0; return; }
+    if (!last) last = stamp;
+    time += Math.min(64, stamp - last) * Number(speedInput.value || 1);
+    last = stamp;
+    draw(time);
+    if (!reducedMotion) raf = requestAnimationFrame(tick);
+    else raf = 0;
   }
 
   function start() {
-    if (animationId) window.cancelAnimationFrame(animationId);
+    if (raf) cancelAnimationFrame(raf);
     paused = false;
-    toggle.setAttribute("aria-pressed", "false");
-    toggle.innerHTML = 'Pause preview <span aria-hidden="true">Ⅱ</span>';
-    animationId = window.requestAnimationFrame(draw);
+    playButton.setAttribute("aria-pressed", "false");
+    playButton.innerHTML = 'Pause field <span aria-hidden="true">Ⅱ</span>';
+    last = 0;
+    if (reducedMotion) requestDraw(); else raf = requestAnimationFrame(tick);
   }
 
-  toggle.addEventListener("click", () => {
-    paused = !paused;
-    if (paused) {
-      window.cancelAnimationFrame(animationId);
-      toggle.setAttribute("aria-pressed", "true");
-      toggle.innerHTML = 'Resume preview <span aria-hidden="true">▶</span>';
-    } else {
-      start();
-    }
-  });
+  function stop() {
+    paused = true;
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    playButton.setAttribute("aria-pressed", "true");
+    playButton.innerHTML = 'Resume field <span aria-hidden="true">▶</span>';
+    requestDraw();
+  }
 
+  function loadWorld() {
+    const seed = Number(seedInput.value);
+    if (!Number.isSafeInteger(seed) || seed < 1 || seed > 4294967295) {
+      seedInput.setCustomValidity("Enter a whole number from 1 to 4294967295.");
+      seedInput.reportValidity();
+      return;
+    }
+    seedInput.setCustomValidity("");
+    world = createWorld({ seed, presetId: presetInput.value });
+    selected = { x: Math.floor(world.width / 2), y: Math.floor(world.height / 2) };
+    camera = { x: 0, y: 0, zoom: 1 };
+    time = 0;
+    updateInspector();
+    requestDraw();
+  }
+
+  function zoomAt(zoom, px, py) {
+    const rect = canvas.getBoundingClientRect();
+    const before = transform(rect.width, rect.height);
+    const wx = (px - before.left) / before.scale;
+    const wy = (py - before.top) / before.scale;
+    camera.zoom = Math.max(.55, Math.min(3.2, zoom));
+    const next = transform(rect.width, rect.height).scale;
+    camera.x = px - wx * next - rect.width / 2 + world.width * next / 2;
+    camera.y = py - wy * next - rect.height / 2 + world.height * next / 2;
+    updateInspector(); requestDraw();
+  }
+  function zoomCenter(factor) {
+    const rect = canvas.getBoundingClientRect();
+    zoomAt(camera.zoom * factor, rect.width / 2, rect.height / 2);
+  }
+  function selectAt(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const view = transform(rect.width, rect.height);
+    const x = Math.floor((clientX - rect.left - view.left) / view.scale);
+    const y = Math.floor((clientY - rect.top - view.top) / view.scale);
+    if (getTile(world, x, y)) { selected = { x, y }; updateInspector(); requestDraw(); }
+  }
+
+  playButton.addEventListener("click", () => paused ? start() : stop());
+  $("generate-world").addEventListener("click", loadWorld);
+  presetInput.addEventListener("change", loadWorld);
+  seedInput.addEventListener("keydown", event => { if (event.key === "Enter") loadWorld(); });
+  $("zoom-in").addEventListener("click", () => zoomCenter(1.2));
+  $("zoom-out").addEventListener("click", () => zoomCenter(1 / 1.2));
+  $("reset-view").addEventListener("click", () => { camera = { x: 0, y: 0, zoom: 1 }; updateInspector(); requestDraw(); });
+  speedInput.addEventListener("change", requestDraw);
+  canvas.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+    canvas.setPointerCapture(event.pointerId);
+    drag = { x: event.clientX, y: event.clientY, lastX: event.clientX, lastY: event.clientY };
+    dragged = false; canvas.classList.add("is-dragging");
+  });
+  canvas.addEventListener("pointermove", event => {
+    if (!drag) return;
+    if (Math.abs(event.clientX - drag.x) + Math.abs(event.clientY - drag.y) > 4) dragged = true;
+    camera.x += event.clientX - drag.lastX; camera.y += event.clientY - drag.lastY;
+    drag.lastX = event.clientX; drag.lastY = event.clientY;
+    if (dragged) requestDraw();
+  });
+  canvas.addEventListener("pointerup", event => {
+    if (!drag) return;
+    if (!dragged) selectAt(event.clientX, event.clientY);
+    drag = null; canvas.classList.remove("is-dragging");
+  });
+  canvas.addEventListener("pointercancel", () => { drag = null; canvas.classList.remove("is-dragging"); });
+  canvas.addEventListener("wheel", event => {
+    event.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    zoomAt(camera.zoom * (event.deltaY < 0 ? 1.12 : 1 / 1.12), event.clientX - rect.left, event.clientY - rect.top);
+  }, { passive: false });
+  canvas.addEventListener("keydown", event => {
+    const step = 24;
+    if (event.key === "ArrowLeft") camera.x += step;
+    else if (event.key === "ArrowRight") camera.x -= step;
+    else if (event.key === "ArrowUp") camera.y += step;
+    else if (event.key === "ArrowDown") camera.y -= step;
+    else if (event.key === "+" || event.key === "=") camera.zoom = Math.min(3.2, camera.zoom * 1.15);
+    else if (event.key === "-") camera.zoom = Math.max(.55, camera.zoom / 1.15);
+    else return;
+    event.preventDefault(); updateInspector(); requestDraw();
+  });
+  window.addEventListener("resize", requestDraw);
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      window.cancelAnimationFrame(animationId);
-    } else if (!paused) {
-      start();
-    }
+    if (document.hidden && raf) { cancelAnimationFrame(raf); raf = 0; }
+    else if (!document.hidden && !paused && !reducedMotion) { last = 0; raf = requestAnimationFrame(tick); }
+  });
+  const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+  if (motionQuery.addEventListener) motionQuery.addEventListener("change", () => {
+    reducedMotion = motionQuery.matches;
+    if (paused || reducedMotion) { if (raf) cancelAnimationFrame(raf); raf = 0; requestDraw(); }
+    else start();
   });
 
-  window.addEventListener("resize", () => {
-    if (paused) draw(previousTime);
-  });
-
+  presetInput.value = world.preset.id;
+  updateInspector();
   start();
 }
