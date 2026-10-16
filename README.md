@@ -4,11 +4,11 @@
 
 This repository is the product source of truth. The public experience will let visitors explore a visually rich world with original voxel-style inhabitants, then gradually add natural-language world authoring, NCA-driven local dynamics, and source-tracked DOTS learning.
 
-## Current status: v0.5 — constrained world specification builder
+## Current status: v0.6 — server-side LLM world-spec compiler
 
-**Current milestone:** v0.5 — constrained world specification builder. Visitors can describe supported settings, compile a validated JSON spec, inspect the result, and apply it to the local world. The compiler is deterministic and local; the server-side LLM endpoint is not connected. The v0.5 public frontend has been manually deployed to the separate production project; Vercel reports the deployment as READY. The interactive page still needs a real-browser visual check on device.
+**Current milestone:** v0.6 — server-side LLM world-spec compiler. Visitors can ask a server-side model to produce a strict versioned world spec, review the JSON, and explicitly apply it, or use the deterministic local compiler. The endpoint calls OpenAI Responses API and requires `OPENAI_API_KEY` in the DOTS Living World Vercel Production environment. The API key's presence could not be verified through the current Vercel connector scope, so live LLM activation must not be assumed until a real provider request succeeds.
 
-The v0.5 world specification builder is now the current milestone:
+The v0.6 world specification workflow is the current milestone:
 
 - Responsive dark visual identity and product landing page.
 - Three interactive deterministic terrain presets: Moss Basin, Crystal Ridge, and Ashen Frontier.
@@ -17,12 +17,14 @@ The v0.5 world specification builder is now the current milestone:
 - Architecture cards that distinguish LLM, DOTS, and NCA responsibilities.
 - NCA channel state and local neighborhood perception, shared 15-feature → 12-hidden-unit → 5-output neural update rule, deterministic per-cell update mask, and explicit initialized weights.
 - NCA overlay toggle, single-step control, reset from the world seed, active-cell and tick metrics.
-- Constrained world-spec builder supporting preset, seed, population, NCA seed radius, update rate, and overlay/engine toggles; inspectable strict JSON schema with unsafe/unknown keys rejected.
-- No API keys, external AI calls, accounts, analytics, or personal data collection.
+- Constrained world-spec builder supporting preset, seed, population, NCA seed radius, update rate, and overlay/engine toggles; strict versioned JSON schema and explicit review/apply flow.
+- Same-origin `POST /api/world-spec` serverless endpoint uses OpenAI Responses API Structured Outputs, then validates the output again using the application schema before returning it.
+- Separate Ask AI and Compile locally buttons; model errors do not silently trigger the local compiler. Request size/prompt bounds, same-origin browser check, response timeout, no-store API responses, and a per-function-instance burst guard.
+- No API key is exposed in the browser or committed to this repository. Ask AI sends the entered prompt and current bounded world settings to OpenAI; the API requests `store: false`. Provider processing remains subject to its terms and account-level controls.
 - Dependency-light app using native HTML, CSS, and JavaScript modules.
 - GitHub Actions checks for syntax, tests, and critical page assets.
 
-The NCA executes a shared neural update rule with deterministic initialized weights, but those weights are not trained. It is a real neural cellular computation, not a learned organism; voxel inhabitants still use explicit scripted policies and are not driven by NCA output. The local world-spec compiler does not call an LLM; the server-side LLM integration and evaluation remain future work, with DOTS integration following later.
+The NCA executes a shared neural update rule with deterministic initialized weights, but those weights are not trained. It is a real neural cellular computation, not a learned organism; voxel inhabitants still use explicit scripted policies and are not driven by NCA output. The deterministic local world-spec compiler remains available as an explicit alternative. The server-side endpoint is implemented, but live AI operation still depends on a configured provider key and a successful production smoke test. Its in-memory burst limiter is not a global quota; a durable rate limiter and cost controls are required before broad public launch.
 
 ## Run locally
 
@@ -57,6 +59,7 @@ The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Ve
 - [v0.3 release notes](docs/RELEASES/v0.3.md).
 - [v0.4 release notes](docs/RELEASES/v0.4.md).
 - [v0.5 release notes](docs/RELEASES/v0.5.md).
+- [v0.6 release notes](docs/RELEASES/v0.6.md).
 
 ## The architecture in one sentence
 

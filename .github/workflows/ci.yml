@@ -31,6 +31,8 @@ jobs:
           test -s src/agents.js
           test -s src/nca.js
           test -s src/world-spec.js
+          test -s api/world-spec.js
+          test -s tests/world-spec-api.test.mjs
           test -s tests/world-spec.test.mjs
           test -s tests/nca.test.mjs
           test -s tests/world.test.mjs
@@ -44,16 +46,19 @@ jobs:
           grep -q 'id="nca-overlay"' index.html
           grep -q 'id="nca-step"' index.html
           grep -q 'id="compile-world-spec"' index.html
+          grep -q 'id="compile-world-spec-ai"' index.html
           grep -q 'id="apply-world-spec"' index.html
-          grep -q '<span>v0.5</span>' index.html
+          grep -q '<span>v0.6</span>' index.html
           grep -q 'id="metric-nca-cells"' index.html
       - name: Assert NCA and world-builder scope is accurately described
         run: |
           grep -qi "weights are not trained" index.html
           grep -qi "initialized weights; it has not been trained" index.html
           grep -q "not trained" docs/RELEASES/v0.4.md
-          grep -qi "no LLM endpoint is connected" index.html
+          grep -qi "OPENAI_API_KEY" index.html
+          grep -qi "store: false" api/world-spec.js
           grep -qi "deterministic and local" docs/RELEASES/v0.5.md
+          grep -qi "credential" docs/RELEASES/v0.6.md
           grep -q "not a Neural Cellular Automaton" src/field.js
       - name: Verify isolated hosting documentation
         run: |

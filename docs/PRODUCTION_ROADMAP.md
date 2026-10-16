@@ -61,17 +61,28 @@ A public web experience where visitors can watch a living artificial world with 
 **Acceptance gate:** bounded state, local neural updates, deterministic replay, inspectable controls, and unit tests are implemented. Training, visual acceptance in real browsers, and performance profiling remain future work.
 
 ### v0.5 — World specification builder
-**Status: implemented as a constrained local authoring prototype; LLM integration remains incomplete.**
+**Status: implemented as a constrained local authoring prototype; superseded by the v0.6 model-backed compiler path.**
 
 - Natural-language instruction box with deterministic extraction of supported preset, seed, population, NCA radius, update rate, and overlay/engine toggles.
 - Strict versioned JSON schema with explicit keys/ranges; unknown keys, unbounded populations, invalid seeds, and unsupported values are rejected.
 - Inspectable JSON preview and explicit Apply-to-world action so users can review settings before the running world changes.
-- No prompt text is sent to a server. The current compiler is not LLM-backed and safely ignores unsupported wording.
-- Next required sub-milestone: add a server-side LLM endpoint with secrets held server-side, rate/cost limits, response schema validation, and local fallback. The frontend must never contain an API key.
+- The local compiler is retained as an explicit alternative and does not send prompt text to a server.
 
-**Acceptance gate for the local prototype:** deterministic compilation, strict schema validation, visible preview/apply workflow, and tests pass. Full v0.5 LLM acceptance remains pending server integration.
+**Acceptance gate:** deterministic compilation, strict schema validation, visible preview/apply workflow, and tests pass.
 
-### v0.6 — DOTS knowledge integration
+### v0.6 — Server-side LLM world-spec compiler
+**Status: endpoint and interface implemented; live provider activation remains credential-gated.**
+
+- Same-origin `POST /api/world-spec` calls the OpenAI Responses API from the server using strict JSON Schema Structured Outputs.
+- Revalidate model output through the existing application validator; reject unknown keys and out-of-range values before the result reaches the browser.
+- Ask AI and Compile locally are separate actions. The app never silently disguises local compilation as an AI response.
+- Server secret is `OPENAI_API_KEY`; optional `OPENAI_MODEL` defaults to `gpt-5-mini`. No key is shipped to the client or checked into source control.
+- Apply request/body limits, same-origin checks, no-store API responses, timeout and provider error handling, plus a per-warm-instance burst guard.
+- Production acceptance requires a configured key, a successful live provider test, a durable global quota, and cost ceilings.
+
+**Acceptance gate:** unit tests cover bounded prompts/defaults, schema, output parsing/validation, refusals, incomplete responses, and local rate-limit behavior. Live LLM acceptance is explicitly pending until the production credential and smoke test are confirmed.
+
+### v0.7 — DOTS knowledge integration
 **Goal:** connect the existing Open DOTS continual-learning implementation without weakening its guarantees.
 
 - Isolate a backend service/API for DOTS and the selected base LLM; do not load the training stack into every visitor's browser.
@@ -83,7 +94,7 @@ A public web experience where visitors can watch a living artificial world with 
 
 **Acceptance gate:** tests cover learning, retrieval, removal, reset, user isolation, and known limits. No “forget everything” claim may be made for knowledge outside the DOTS ledger.
 
-### v0.7 — World learning loop and sharing
+### v0.8 — World learning loop and sharing
 **Goal:** connect language instruction, world execution, and measured feedback.
 
 - Let users teach a supported rule or objective, run a controlled experiment, and compare before/after outcomes.

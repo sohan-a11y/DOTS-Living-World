@@ -15,6 +15,7 @@ const ncaResetButton = $("nca-reset");
 const ncaStepButton = $("nca-step");
 const worldPromptInput = $("world-prompt");
 const compileSpecButton = $("compile-world-spec");
+const compileAiSpecButton = $("compile-world-spec-ai");
 const applySpecButton = $("apply-world-spec");
 const specPreview = $("world-spec-json");
 const specStatus = $("world-spec-status");
@@ -356,16 +357,58 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   if (ncaResetButton) ncaResetButton.addEventListener("click", () => { if (!ncaEnabled) return; ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed, seedRadius: ncaSeedRadius }); updateInspector(); requestDraw(); });
   if (ncaStepButton) ncaStepButton.addEventListener("click", () => { if (!ncaEnabled) return; ncaField = stepNca(ncaField, { updateRate: 1 }); updateInspector(); requestDraw(); });
   if (compileSpecButton && worldPromptInput && specPreview && specStatus && applySpecButton) {
+    function currentWorldDefaults() {
+      return {
+        presetId: presetInput.value,
+        seed: Number(seedInput.value) || world.seed,
+        inhabitantCount,
+        nca: { enabled: ncaEnabled, showOverlay: ncaOverlayVisible, seedRadius: ncaSeedRadius, updateRate: ncaUpdateRate }
+      };
+    }
+    function renderCompiledSpec(spec, source) {
+      compiledSpec = validateWorldSpec(spec);
+      specPreview.textContent = JSON.stringify(compiledSpec, null, 2);
+      applySpecButton.disabled = false;
+      specStatus.textContent = source + " specification ready. Review the JSON, then apply it. No settings change before you press Apply to world.";
+    }
     compileSpecButton.addEventListener("click", () => {
       try {
-        compiledSpec = compileWorldPrompt(worldPromptInput.value, { presetId: presetInput.value, seed: Number(seedInput.value) || world.seed, inhabitantCount, nca: { enabled: ncaEnabled, showOverlay: ncaOverlayVisible, seedRadius: ncaSeedRadius, updateRate: ncaUpdateRate } });
-        validateWorldSpec(compiledSpec);
-        specPreview.textContent = JSON.stringify(compiledSpec, null, 2);
-        applySpecButton.disabled = false;
-        specStatus.textContent = "Specification compiled locally. Review the JSON, then apply it. This compiler does not call an LLM or execute code.";
+        renderCompiledSpec(compileWorldPrompt(worldPromptInput.value, currentWorldDefaults()), "Local");
       } catch (error) {
         compiledSpec = null; specPreview.textContent = "{ }"; applySpecButton.disabled = true;
-        specStatus.textContent = error instanceof Error ? error.message : "Could not compile that world specification.";
+        specStatus.textContent = error instanceof Error ? error.message : "Could not compile that world specification locally.";
+      }
+    });
+    if (compileAiSpecButton) compileAiSpecButton.addEventListener("click", async () => {
+      if (compileAiSpecButton.disabled) return;
+      compileAiSpecButton.disabled = true;
+      compileSpecButton.disabled = true;
+      const originalText = compileAiSpecButton.textContent;
+      compileAiSpecButton.textContent = "Asking AI…";
+      specStatus.textContent = "Sending the instruction and current supported settings to the server-side model. The world will not change until you apply the result.";
+      try {
+        const response = await fetch("/api/world-spec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ prompt: worldPromptInput.value, defaults: currentWorldDefaults() })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const error = new Error(payload.error || "The AI compiler is unavailable. Use Compile locally or try again.");
+          error.code = payload.code;
+          throw error;
+        }
+        renderCompiledSpec(payload.spec, "AI");
+        specStatus.textContent = "AI specification compiled and schema-validated" + (payload.model ? " with " + payload.model : "") + ". Review the JSON, then apply it.";
+      } catch (error) {
+        compiledSpec = null;
+        specPreview.textContent = "{ }";
+        applySpecButton.disabled = true;
+        specStatus.textContent = error instanceof Error ? error.message : "The AI compiler failed. Use Compile locally or try again.";
+      } finally {
+        compileAiSpecButton.disabled = false;
+        compileSpecButton.disabled = false;
+        compileAiSpecButton.textContent = originalText;
       }
     });
     applySpecButton.addEventListener("click", () => {
