@@ -259,3 +259,22 @@ h2 { margin: 18px 0 0; font-size: clamp(34px, 4vw, 49px); line-height: 1.08; let
 .nca-legend { color:#7edfd1; font:8px var(--mono); white-space:nowrap; }
 .nca-legend::before { content:""; display:inline-block; width:10px; height:10px; margin-right:6px; background:rgba(72,190,204,.8); border:1px solid rgba(216,255,247,.7); vertical-align:-1px; }
 @media(max-width:790px) { .nca-controls { gap:7px; padding:10px 12px; } .nca-model-note { margin-left:0; width:100%; } }
+
+/* v0.5 constrained world-specification builder */
+.world-builder { margin:0 0 28px; padding:22px; border:1px solid var(--line-strong); background:linear-gradient(145deg,rgba(18,29,27,.9),rgba(10,14,15,.94)); }
+.world-builder-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+.world-builder-head h3 { margin:13px 0 0; font-size:clamp(22px,3vw,31px); line-height:1.14; letter-spacing:-.04em; }
+.world-builder-head h3 em { color:var(--mint); font-family:Georgia,serif; font-weight:400; }
+.builder-mode { color:#8bd5c7; border:1px solid rgba(122,217,229,.25); padding:8px 9px; font:8px var(--mono); white-space:nowrap; }
+.world-builder-copy { max-width:760px; color:#8b9b93; font-size:11px; line-height:1.8; margin:13px 0 18px; }
+.prompt-label { display:block; margin:0 0 8px; color:#a3b8ac; font:8px var(--mono); letter-spacing:.12em; }
+#world-prompt { display:block; width:100%; min-height:84px; resize:vertical; border:1px solid var(--line-strong); border-radius:2px; background:#080e0c; color:#e8f3eb; padding:12px; font:11px/1.75 var(--mono); outline-offset:2px; }
+#world-prompt:focus-visible { outline:2px solid var(--mint); }
+.builder-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:11px; }
+.control-button:disabled { opacity:.4; cursor:not-allowed; }
+.spec-status { margin:13px 0 0; min-height:18px; color:#a9c9b7; font-size:10px; line-height:1.65; }
+.spec-details { margin-top:12px; border-top:1px solid var(--line); padding-top:11px; }
+.spec-details summary { color:#9fb8a9; cursor:pointer; font:9px var(--mono); }
+#world-spec-json { overflow:auto; max-height:280px; margin:11px 0 0; padding:13px; border:1px solid var(--line); background:#070b0a; color:#aee5d3; font:9px/1.7 var(--mono); white-space:pre-wrap; overflow-wrap:anywhere; }
+.builder-limit { margin-top:11px; color:#65796d; font:8px/1.7 var(--mono); }
+@media(max-width:790px) { .world-builder { padding:15px; } .world-builder-head { flex-direction:column; } .builder-mode { white-space:normal; } .builder-actions .control-button { flex:1 1 145px; } }

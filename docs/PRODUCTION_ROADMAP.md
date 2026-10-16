@@ -60,16 +60,16 @@ A public web experience where visitors can watch a living artificial world with 
 
 **Acceptance gate:** bounded state, local neural updates, deterministic replay, inspectable controls, and unit tests are implemented. Training, visual acceptance in real browsers, and performance profiling remain future work.
 
-### v0.5 — LLM world builder
-**Goal:** let users describe a world and configure it safely.
+### v0.5 — World specification builder
+**Status: implemented as a constrained local authoring prototype; LLM integration remains incomplete.**
 
-- Implement natural-language prompt to strict JSON world-specification schema.
-- Validate ranges, supported cell channels, available assets, runtime budget, and allowed objectives.
-- Use server-side LLM calls; never expose API keys in the browser.
-- Do not execute arbitrary code returned by the LLM. Only allow validated declarative specs.
-- Add user-visible explanation of which settings the LLM changed and an undo/restore flow.
+- Natural-language instruction box with deterministic extraction of supported preset, seed, population, NCA radius, update rate, and overlay/engine toggles.
+- Strict versioned JSON schema with explicit keys/ranges; unknown keys, unbounded populations, invalid seeds, and unsupported values are rejected.
+- Inspectable JSON preview and explicit Apply-to-world action so users can review settings before the running world changes.
+- No prompt text is sent to a server. The current compiler is not LLM-backed and safely ignores unsupported wording.
+- Next required sub-milestone: add a server-side LLM endpoint with secrets held server-side, rate/cost limits, response schema validation, and local fallback. The frontend must never contain an API key.
 
-**Acceptance gate:** malformed or malicious output is rejected safely; common prompts produce reproducible configurations; request rate/cost limits work.
+**Acceptance gate for the local prototype:** deterministic compilation, strict schema validation, visible preview/apply workflow, and tests pass. Full v0.5 LLM acceptance remains pending server integration.
 
 ### v0.6 — DOTS knowledge integration
 **Goal:** connect the existing Open DOTS continual-learning implementation without weakening its guarantees.

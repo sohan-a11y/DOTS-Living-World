@@ -1,6 +1,7 @@
 import { createWorld, getTile, terrainDescription } from "./world.js";
 import { createAgents, stepAgents } from "./agents.js";
 import { createNcaField, stepNca, countActiveCells } from "./nca.js";
+import { compileWorldPrompt, validateWorldSpec } from "./world-spec.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("world-field");
@@ -12,6 +13,11 @@ const speedInput = $("world-speed");
 const ncaOverlayInput = $("nca-overlay");
 const ncaResetButton = $("nca-reset");
 const ncaStepButton = $("nca-step");
+const worldPromptInput = $("world-prompt");
+const compileSpecButton = $("compile-world-spec");
+const applySpecButton = $("apply-world-spec");
+const specPreview = $("world-spec-json");
+const specStatus = $("world-spec-status");
 const metrics = {
   preset: $("metric-preset"), seed: $("metric-seed"), tiles: $("metric-tiles"),
   water: $("metric-water"), resources: $("metric-resources"), zoom: $("metric-zoom"),
@@ -26,6 +32,11 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   let agents = createAgents(world);
   let ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed });
   let ncaOverlayVisible = ncaOverlayInput ? ncaOverlayInput.checked : true;
+  let ncaEnabled = true;
+  let ncaSeedRadius = 2;
+  let ncaUpdateRate = 0.55;
+  let inhabitantCount = 8;
+  let compiledSpec = null;
   let simulationTick = 0;
   let simulationAccumulator = 0;
   let selectedAgentId = null;
@@ -68,7 +79,7 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     metrics.tick.textContent = simulationTick.toLocaleString();
     metrics.ncaCells.textContent = countActiveCells(ncaField).toLocaleString();
     metrics.ncaTick.textContent = ncaField.tick.toLocaleString();
-    metrics.ncaStatus.textContent = ncaOverlayVisible ? "OVERLAY ON" : "OVERLAY OFF";
+    metrics.ncaStatus.textContent = !ncaEnabled ? "NCA DISABLED" : ncaOverlayVisible ? "OVERLAY ON" : "OVERLAY OFF";
     const selectedAgent = agents.find(agent => agent.id === selectedAgentId);
     if (selectedAgent) {
       metrics.title.textContent = "Inhabitant selected";
@@ -245,7 +256,7 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     while (simulationAccumulator >= 420) {
       simulationAccumulator -= 420;
       agents = stepAgents(world, agents);
-      ncaField = stepNca(ncaField, { updateRate: 0.55 });
+      if (ncaEnabled) ncaField = stepNca(ncaField, { updateRate: ncaUpdateRate });
       simulationTick += 1;
       stepped = true;
     }
@@ -283,9 +294,12 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     }
     seedInput.setCustomValidity("");
     world = createWorld({ seed, presetId: presetInput.value });
-    agents = createAgents(world);
-    ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed });
-    ncaOverlayVisible = ncaOverlayInput ? ncaOverlayInput.checked : true;
+    agents = createAgents(world, { count: inhabitantCount });
+    ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed, seedRadius: ncaSeedRadius });
+    ncaOverlayVisible = ncaEnabled && (ncaOverlayInput ? ncaOverlayInput.checked : true);
+    if (ncaOverlayInput) ncaOverlayInput.disabled = !ncaEnabled;
+    if (ncaStepButton) ncaStepButton.disabled = !ncaEnabled;
+    if (ncaResetButton) ncaResetButton.disabled = !ncaEnabled;
     simulationTick = 0;
     simulationAccumulator = 0;
     selectedAgentId = null;
@@ -338,9 +352,35 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   $("zoom-out").addEventListener("click", () => zoomCenter(1 / 1.2));
   $("reset-view").addEventListener("click", () => { camera = { x: 0, y: 0, zoom: 1 }; updateInspector(); requestDraw(); });
   speedInput.addEventListener("change", requestDraw);
-  if (ncaOverlayInput) ncaOverlayInput.addEventListener("change", () => { ncaOverlayVisible = ncaOverlayInput.checked; updateInspector(); requestDraw(); });
-  if (ncaResetButton) ncaResetButton.addEventListener("click", () => { ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed }); updateInspector(); requestDraw(); });
-  if (ncaStepButton) ncaStepButton.addEventListener("click", () => { ncaField = stepNca(ncaField, { updateRate: 1 }); updateInspector(); requestDraw(); });
+  if (ncaOverlayInput) ncaOverlayInput.addEventListener("change", () => { ncaOverlayVisible = ncaEnabled && ncaOverlayInput.checked; updateInspector(); requestDraw(); });
+  if (ncaResetButton) ncaResetButton.addEventListener("click", () => { if (!ncaEnabled) return; ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed, seedRadius: ncaSeedRadius }); updateInspector(); requestDraw(); });
+  if (ncaStepButton) ncaStepButton.addEventListener("click", () => { if (!ncaEnabled) return; ncaField = stepNca(ncaField, { updateRate: 1 }); updateInspector(); requestDraw(); });
+  if (compileSpecButton && worldPromptInput && specPreview && specStatus && applySpecButton) {
+    compileSpecButton.addEventListener("click", () => {
+      try {
+        compiledSpec = compileWorldPrompt(worldPromptInput.value, { presetId: presetInput.value, seed: Number(seedInput.value) || world.seed, inhabitantCount, nca: { enabled: ncaEnabled, showOverlay: ncaOverlayVisible, seedRadius: ncaSeedRadius, updateRate: ncaUpdateRate } });
+        validateWorldSpec(compiledSpec);
+        specPreview.textContent = JSON.stringify(compiledSpec, null, 2);
+        applySpecButton.disabled = false;
+        specStatus.textContent = "Specification compiled locally. Review the JSON, then apply it. This compiler does not call an LLM or execute code.";
+      } catch (error) {
+        compiledSpec = null; specPreview.textContent = "{ }"; applySpecButton.disabled = true;
+        specStatus.textContent = error instanceof Error ? error.message : "Could not compile that world specification.";
+      }
+    });
+    applySpecButton.addEventListener("click", () => {
+      if (!compiledSpec) return;
+      try {
+        const spec = validateWorldSpec(compiledSpec);
+        presetInput.value = spec.presetId; seedInput.value = String(spec.seed); inhabitantCount = spec.inhabitantCount;
+        ncaEnabled = spec.nca.enabled; ncaSeedRadius = spec.nca.seedRadius; ncaUpdateRate = spec.nca.updateRate;
+        if (ncaOverlayInput) ncaOverlayInput.checked = spec.nca.showOverlay;
+        ncaOverlayVisible = ncaEnabled && spec.nca.showOverlay;
+        loadWorld();
+        specStatus.textContent = "Applied specification: " + spec.presetId + ", seed " + spec.seed + ", " + spec.inhabitantCount + " inhabitants.";
+      } catch (error) { specStatus.textContent = error instanceof Error ? error.message : "The specification could not be applied."; }
+    });
+  }
   canvas.addEventListener("pointerdown", event => {
     if (event.button !== 0) return;
     canvas.setPointerCapture(event.pointerId);
@@ -389,6 +429,8 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   });
 
   presetInput.value = world.preset.id;
+  if (specPreview) specPreview.textContent = "{ }";
+  if (applySpecButton) applySpecButton.disabled = true;
   updateInspector();
   start();
 }

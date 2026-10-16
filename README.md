@@ -4,11 +4,11 @@
 
 This repository is the product source of truth. The public experience will let visitors explore a visually rich world with original voxel-style inhabitants, then gradually add natural-language world authoring, NCA-driven local dynamics, and source-tracked DOTS learning.
 
-## Current status: v0.4 — NCA simulation core
+## Current status: v0.5 — constrained world specification builder
 
-**Current milestone:** v0.4 — NCA simulation core. The frontend includes a shared neural cellular update network, deterministic initialization, bounded five-channel state, cell overlay controls, one-step execution, reset, and replayable test runs. This is an untrained NCA runtime, not a trained organism or production AI. The public deployment is updated manually and should be verified on-device before relying on it.
+**Current milestone:** v0.5 — constrained world specification builder. Visitors can describe supported settings, compile a validated JSON spec, inspect the result, and apply it to the local world. The compiler is deterministic and local; the server-side LLM endpoint is not connected. The public deployment is updated manually and should be verified on-device before relying on it.
 
-The v0.4 NCA core is now the current milestone:
+The v0.5 world specification builder is now the current milestone:
 
 - Responsive dark visual identity and product landing page.
 - Three interactive deterministic terrain presets: Moss Basin, Crystal Ridge, and Ashen Frontier.
@@ -17,11 +17,12 @@ The v0.4 NCA core is now the current milestone:
 - Architecture cards that distinguish LLM, DOTS, and NCA responsibilities.
 - NCA channel state and local neighborhood perception, shared 15-feature → 12-hidden-unit → 5-output neural update rule, deterministic per-cell update mask, and explicit initialized weights.
 - NCA overlay toggle, single-step control, reset from the world seed, active-cell and tick metrics.
+- Constrained world-spec builder supporting preset, seed, population, NCA seed radius, update rate, and overlay/engine toggles; inspectable strict JSON schema with unsafe/unknown keys rejected.
 - No API keys, external AI calls, accounts, analytics, or personal data collection.
 - Dependency-light app using native HTML, CSS, and JavaScript modules.
 - GitHub Actions checks for syntax, tests, and critical page assets.
 
-The NCA executes a shared neural update rule with deterministic initialized weights, but those weights are not trained. It is a real neural cellular computation, not a learned organism; voxel inhabitants still use explicit scripted policies and are not driven by NCA output. Training/evaluation is future work, followed by LLM world authoring (v0.5) and DOTS integration (v0.6).
+The NCA executes a shared neural update rule with deterministic initialized weights, but those weights are not trained. It is a real neural cellular computation, not a learned organism; voxel inhabitants still use explicit scripted policies and are not driven by NCA output. The local world-spec compiler does not call an LLM; the server-side LLM integration and evaluation remain future work, with DOTS integration following later.
 
 ## Run locally
 
@@ -55,6 +56,7 @@ The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Ve
 - [v0.2 release notes](docs/RELEASES/v0.2.md).
 - [v0.3 release notes](docs/RELEASES/v0.3.md).
 - [v0.4 release notes](docs/RELEASES/v0.4.md).
+- [v0.5 release notes](docs/RELEASES/v0.5.md).
 
 ## The architecture in one sentence
 
