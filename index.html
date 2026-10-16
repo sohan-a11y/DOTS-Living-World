@@ -73,10 +73,10 @@
           <article class="field-frame">
             <div class="frame-topbar">
               <div class="frame-title"><span class="live-dot"></span><span>WORLD / NCA + VOXEL ECOLOGY</span></div>
-              <div class="frame-meta"><span>DETERMINISTIC PRESET</span><span class="meta-separator">/</span><span>v0.3</span></div>
+              <div class="frame-meta"><span>DETERMINISTIC PRESET</span><span class="meta-separator">/</span><span>v0.4</span></div>
             </div>
             <div class="canvas-wrap">
-              <canvas id="world-field" aria-label="Interactive world map with deterministic terrain and original voxel inhabitants. Drag to pan, zoom with controls, and select a tile or inhabitant to inspect it." role="img" tabindex="0"></canvas>
+              <canvas id="world-field" aria-label="Interactive terrain with an NCA cell overlay and original voxel inhabitants. Drag to pan, zoom with controls, and select a tile or inhabitant to inspect it." role="img" tabindex="0"></canvas>
               <div class="canvas-top-label">WORLD MAP <span>NCA FIELD · 5 CHANNELS · 8 INHABITANTS</span></div>
               <div class="canvas-bottom">
                 <span>DRAG TO PAN · TAP AN INHABITANT · CELLS OVERLAY THE TERRAIN</span>
@@ -174,7 +174,7 @@
             <div class="architecture-icon icon-nca" aria-hidden="true"><span class="nca-cell"></span><span class="nca-cell"></span><span class="nca-cell"></span><span class="nca-cell"></span><span class="nca-cell"></span><span class="nca-cell"></span><span class="nca-cell"></span><span class="nca-cell"></span><span class="nca-cell"></span></div>
             <h3>NCA</h3>
             <p class="card-subtitle">The local dynamics</p>
-            <p>Applies a shared learned local rule across cell states, allowing self-organizing spatial behavior to emerge.</p>
+            <p>Applies a shared neural update rule across cell states. This build has deterministic initialized weights; training and target-directed learning remain future work.</p>
             <div class="tag-row"><span>Local rules</span><span>Spatial dynamics</span><span>Growth</span></div>
           </article>
         </div>

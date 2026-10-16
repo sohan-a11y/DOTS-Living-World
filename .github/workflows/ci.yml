@@ -41,6 +41,7 @@ jobs:
           grep -q 'id="metric-tick"' index.html
           grep -q 'id="nca-overlay"' index.html
           grep -q 'id="nca-step"' index.html
+          grep -q '<span>v0.4</span>' index.html
           grep -q 'id="metric-nca-cells"' index.html
       - name: Assert NCA scope is accurately described
         run: |
