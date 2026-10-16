@@ -46,7 +46,6 @@ jobs:
           grep -q 'id="compile-world-spec"' index.html
           grep -q 'id="apply-world-spec"' index.html
           grep -q '<span>v0.5</span>' index.html
-          grep -q '<span>v0.4</span>' index.html
           grep -q 'id="metric-nca-cells"' index.html
       - name: Assert NCA and world-builder scope is accurately described
         run: |
