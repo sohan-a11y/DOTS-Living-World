@@ -6,7 +6,7 @@ This repository is the product source of truth. The public experience will let v
 
 ## Current status: v0.3 — voxel inhabitants and rule-based ecology
 
-**Source milestone:** v0.3 is committed to `main` and passes CI. **Current public deployment:** [dots-living-world.vercel.app](https://dots-living-world.vercel.app/) still serves the previously deployed v0.2 interactive viewer. The v0.3 source has not been published because this session's Vercel access is returning a team-scope authorization error. The site is not the v1.0 production product.
+**Current milestone and public deployment:** v0.3 — voxel inhabitants and rule-based ecology. The production alias [dots-living-world.vercel.app](https://dots-living-world.vercel.app/) now points to a Vercel `READY` deployment containing the v0.3 frontend, including enlarged high-contrast inhabitant sprites and phone-friendly selection targets. This is an early prototype, not the v1.0 production product.
 
 The v0.3 inhabitant prototype is now the current milestone:
 
