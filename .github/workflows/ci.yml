@@ -34,5 +34,5 @@ jobs:
           grep -q "not a Neural Cellular Automaton" src/field.js
       - name: Verify isolated hosting documentation
         run: |
-          grep -q "do not attach" README.md
+          grep -qi "do not attach" README.md
           grep -q "sohan-a11y.github.io" docs/ARCHITECTURE_AND_HOSTING.md
