@@ -39,7 +39,7 @@ jobs:
           grep -q 'id="metric-tick"' index.html
       - name: Assert the v0.3 and NCA limitations are clear
         run: |
-          grep -qi "NCA-driven behavior is not connected yet" index.html
+          grep -qi "Behaviors are scripted" index.html
           grep -qi "scripted policies, not learned AI" index.html
           grep -q "not a Neural Cellular Automaton" src/field.js
       - name: Verify isolated hosting documentation
