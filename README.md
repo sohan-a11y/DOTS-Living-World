@@ -6,7 +6,9 @@ This repository is the product source of truth. The public experience will let v
 
 ## v0.1 status
 
-The first web foundation is being established:
+**Current Vercel deployment:** [dots-living-world.vercel.app](https://dots-living-world.vercel.app/). Vercel reports the deployment as ready. The site is a v0.1 foundation build, not the v1.0 production product.
+
+The first web foundation is established:
 
 - Responsive dark visual identity and product landing page.
 - Animated procedural field preview, explicitly labelled as an illustration rather than a running NCA.
@@ -37,7 +39,7 @@ and open http://localhost:4173.
 
 ## Hosting separation
 
-Deploy this repository to an independent Vercel project named `dots-living-world` (if available) and keep the default Vercel hostname. Do not attach `artifex.engineer` or a subdomain to this project.
+An independent Vercel project named `dots-living-world` exists and its deployment alias is `https://dots-living-world.vercel.app/`. It has no custom domains. The current v0.1 deployment was uploaded manually because the Vercel GitHub integration is not installed; pushes to GitHub will not automatically deploy until that integration is connected to this repository. Do not attach `artifex.engineer` or a subdomain to this project.
 
 The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Vercel project are outside this product and must not be changed. See [Hosting Architecture](docs/ARCHITECTURE_AND_HOSTING.md).
 

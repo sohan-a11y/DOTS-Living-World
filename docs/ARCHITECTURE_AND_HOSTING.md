@@ -14,6 +14,20 @@ Reference: https://docs.github.com/en/pages/configuring-a-custom-domain-for-your
 
 A dedicated Vercel project without a custom domain avoids changing Artifex DNS or the existing Artifex site configuration. Do not create a `CNAME` file here for `artifex.engineer`.
 
+## Current Vercel setup (2026-10-16)
+
+- Separate Vercel project: `dots-living-world`.
+- Project ID: `prj_J2w6vhYi2MZAiJffovY7l0luUwjy`.
+- Vercel reports the v0.1 deployment as `READY`, with alias `https://dots-living-world.vercel.app/`.
+- No custom domains are attached. Project SSO protection is configured for Preview deployments only; production is intended to be public.
+- Initial frontend files were uploaded to this project manually. Vercel reported that the GitHub integration must be installed before it can connect the repository, so automatic deployment-on-push is not yet configured.
+
+### Finish GitHub-to-Vercel automation
+
+In the Vercel dashboard, open the **dots-living-world** project, go to **Settings → Git**, and connect `sohan-a11y/DOTS-Living-World`. Install/authorize Vercel's GitHub integration if requested, and grant access to this repository only if the provider offers repository-level access selection. Confirm that `main` is the production branch. Do not connect `sohan-a11y/sohan-a11y.github.io` or change the Artifex project.
+
+After this connection, pushes to `main` should deploy this separate project, and pull requests should receive preview deployments subject to the project's protection settings. Verify the first automatic deployment before relying on it.
+
 ## Proposed web architecture
 
 - **Web client:** Next.js/React + TypeScript, independently deployed. Three.js/React Three Fiber for 3D rendering and original voxel characters.
