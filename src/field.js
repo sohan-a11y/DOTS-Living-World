@@ -29,6 +29,10 @@ export function createField(width, height, seed = 73021) {
 }
 
 export function sampleField(field, x, y, time = 0) {
+  if (!Number.isInteger(x) || !Number.isInteger(y)
+      || x < 0 || y < 0 || x >= field.width || y >= field.height) {
+    return 0;
+  }
   const index = y * field.width + x;
   const base = field.cells[index] ?? 0;
   const shimmer = Math.sin(time * 0.001 + x * 0.08 + y * 0.06) * 0.025;
