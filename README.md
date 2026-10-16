@@ -6,7 +6,7 @@ This repository is the product source of truth. The public experience will let v
 
 ## Current status: v0.5 — constrained world specification builder
 
-**Current milestone:** v0.5 — constrained world specification builder. Visitors can describe supported settings, compile a validated JSON spec, inspect the result, and apply it to the local world. The compiler is deterministic and local; the server-side LLM endpoint is not connected. The public deployment is updated manually and should be verified on-device before relying on it.
+**Current milestone:** v0.5 — constrained world specification builder. Visitors can describe supported settings, compile a validated JSON spec, inspect the result, and apply it to the local world. The compiler is deterministic and local; the server-side LLM endpoint is not connected. The v0.5 public frontend has been manually deployed to the separate production project; Vercel reports the deployment as READY. The interactive page still needs a real-browser visual check on device.
 
 The v0.5 world specification builder is now the current milestone:
 
@@ -44,7 +44,7 @@ and open http://localhost:4173.
 
 ## Hosting separation
 
-An independent Vercel project named `dots-living-world` exists and its deployment alias is `https://dots-living-world.vercel.app/`. It has no custom domains. The v0.4 deployment is uploaded manually. The GitHub integration status should be verified in Vercel Settings → Git before assuming that pushes will deploy automatically. Do not attach `artifex.engineer` or a subdomain to this project.
+An independent Vercel project named `dots-living-world` exists and its deployment alias is `https://dots-living-world.vercel.app/`. It has no custom domains. The v0.5 deployment is uploaded manually. The GitHub integration status should be verified in Vercel Settings → Git before assuming that pushes will deploy automatically. Do not attach `artifex.engineer` or a subdomain to this project.
 
 The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Vercel project are outside this product and must not be changed. See [Hosting Architecture](docs/ARCHITECTURE_AND_HOSTING.md).
 
