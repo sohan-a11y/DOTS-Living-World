@@ -31,7 +31,7 @@
         <a href="#roadmap">Roadmap</a>
         <a href="https://github.com/sohan-a11y/DOTS-Living-World" target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>
       </nav>
-      <div class="release-pill"><span class="status-dot"></span> VOXEL ECOLOGY / v0.3</div>
+      <div class="release-pill"><span class="status-dot"></span> NCA CORE / v0.4</div>
     </header>
 
     <main id="top">
@@ -44,7 +44,7 @@
             <a class="button button-primary" href="#field">Explore the field <span aria-hidden="true">↘</span></a>
             <a class="text-link" href="#architecture">Understand the system <span aria-hidden="true">→</span></a>
           </div>
-          <div class="hero-note"><span class="note-icon">✳</span><span>v0.3 adds original voxel inhabitants and inspectable rule-based ecology. A learned NCA runtime remains planned for v0.4.</span></div>
+          <div class="hero-note"><span class="note-icon">✳</span><span>v0.4 adds an actual shared neural cellular update rule over a local field. Its deterministic weights are initialized, not trained; experiments are replayable.</span></div>
         </div>
         <div class="hero-side" aria-label="Project status">
           <div class="side-label">SYSTEM NOTES <span>001—003</span></div>
@@ -67,19 +67,19 @@
       <section class="field-section content-width" id="field">
         <div class="section-heading">
           <div><div class="eyebrow"><span class="eyebrow-line"></span> FIELD STUDY / 0001</div><h2>A window into<br /><em>what comes next.</em></h2></div>
-          <div class="section-aside">Explore deterministic terrain populated by original blocky inhabitants. Watch simple hunger, energy, exploration and foraging rules, then select an inhabitant to inspect its state. These are scripted policies, not learned AI or an NCA run.</div>
+          <div class="section-aside">Explore original voxel inhabitants alongside a neural cellular field. The NCA computes shared local updates over five state channels and can be stepped, reset, and inspected with reproducible seeds. Its weights are not trained yet.</div>
         </div>
         <div class="field-layout">
           <article class="field-frame">
             <div class="frame-topbar">
-              <div class="frame-title"><span class="live-dot"></span><span>WORLD / VOXEL ECOLOGY</span></div>
+              <div class="frame-title"><span class="live-dot"></span><span>WORLD / NCA + VOXEL ECOLOGY</span></div>
               <div class="frame-meta"><span>DETERMINISTIC PRESET</span><span class="meta-separator">/</span><span>v0.3</span></div>
             </div>
             <div class="canvas-wrap">
               <canvas id="world-field" aria-label="Interactive world map with deterministic terrain and original voxel inhabitants. Drag to pan, zoom with controls, and select a tile or inhabitant to inspect it." role="img" tabindex="0"></canvas>
-              <div class="canvas-top-label">WORLD MAP <span>8 INHABITANTS · SCRIPTED ECOLOGY</span></div>
+              <div class="canvas-top-label">WORLD MAP <span>NCA FIELD · 5 CHANNELS · 8 INHABITANTS</span></div>
               <div class="canvas-bottom">
-                <span>DRAG TO PAN · TAP A CHARACTER TO INSPECT</span>
+                <span>DRAG TO PAN · TAP AN INHABITANT · CELLS OVERLAY THE TERRAIN</span>
                 <button class="preview-toggle" id="preview-toggle" type="button" aria-pressed="false">Pause field <span aria-hidden="true">Ⅱ</span></button>
               </div>
             </div>
@@ -106,12 +106,19 @@
                 </select>
               </label>
             </div>
+            <div class="nca-controls" aria-label="Neural cellular automata controls">
+              <label class="nca-overlay-control"><input id="nca-overlay" type="checkbox" checked /> <span>Show NCA cells</span></label>
+              <button class="control-button control-primary" id="nca-step" type="button">Step NCA</button>
+              <button class="control-button" id="nca-reset" type="button">Reset NCA</button>
+              <span class="nca-model-note">SHARED MLP / UNTRAINED WEIGHTS</span>
+            </div>
             <div class="frame-footer">
               <span><i class="legend legend-mint"></i> Moss / lowlands</span>
               <span><i class="legend legend-amber"></i> Resource nodes</span>
               <span><i class="legend legend-cyan"></i> Water / crystal</span>
               <span class="inhabitant-legend">Voxel inhabitants</span>
-              <span class="disclaimer">Scripted ecology · no NCA weights loaded</span>
+              <span class="nca-legend">NCA cell state</span>
+              <span class="disclaimer">NCA weights initialized · not trained</span>
             </div>
           </article>
 
@@ -125,13 +132,16 @@
             <div class="inspector-row"><span>Resource nodes</span><span id="metric-resources">—</span></div>
             <div class="inspector-row"><span>Camera zoom</span><span id="metric-zoom">100%</span></div>
             <div class="inspector-row"><span>Inhabitants</span><span id="metric-inhabitants">8</span></div>
-            <div class="inspector-row"><span>Simulation tick</span><span id="metric-tick">0</span></div>
+            <div class="inspector-row"><span>Agent simulation tick</span><span id="metric-tick">0</span></div>
+            <div class="inspector-row"><span>NCA active cells</span><span id="metric-nca-cells">13</span></div>
+            <div class="inspector-row"><span>NCA update tick</span><span id="metric-nca-tick">0</span></div>
+            <div class="inspector-row"><span>NCA overlay</span><span id="metric-nca-status">OVERLAY ON</span></div>
             <div class="tile-inspector" aria-live="polite">
               <div class="tile-inspector-head"><span>SELECTED TILE / INHABITANT</span><span id="tile-coordinate">x 32 · y 18</span></div>
               <strong id="tile-name">Select a tile</strong>
               <p id="tile-description">Tap a glowing block-style character to inspect its needs and behavior, or tap an empty tile to inspect terrain.</p>
             </div>
-            <div class="inspector-callout"><span class="callout-mark">↗</span><p>Glowing block-style inhabitants are visible on the map. Tap a character for its hunger, energy and latest event. Behaviors are scripted; NCA-driven behavior remains planned for v0.4.</p></div>
+            <div class="inspector-callout"><span class="callout-mark">↗</span><p>The cyan/teal overlay is the NCA field state. Step NCA to advance one update, or reset it to the seed. This neural rule uses deterministic initialized weights; it has not been trained. Agent movement remains scripted and separate from cell dynamics.</p></div>
             <a href="#roadmap" class="inspector-link">See build sequence <span>→</span></a>
           </aside>
         </div>
@@ -178,8 +188,8 @@
         <div class="roadmap-list">
           <div class="roadmap-item"><span class="roadmap-version">v0.1</span><div><strong>Web foundation</strong><small>Responsive shell · project isolation · checks</small></div><span class="roadmap-status">DONE</span></div>
           <div class="roadmap-item"><span class="roadmap-version">v0.2</span><div><strong>Interactive world viewer</strong><small>Camera · field controls · deterministic presets</small></div><span class="roadmap-status">DONE</span></div>
-          <div class="roadmap-item active"><span class="roadmap-version">v0.3</span><div><strong>Voxel inhabitants</strong><small>Original characters · basic needs · rule-based ecology</small></div><span class="roadmap-status">CURRENT</span></div>
-          <div class="roadmap-item"><span class="roadmap-version">v0.4</span><div><strong>NCA simulation core</strong><small>Learned local dynamics · replayable experiments</small></div><span class="roadmap-status">PLANNED</span></div>
+          <div class="roadmap-item"><span class="roadmap-version">v0.3</span><div><strong>Voxel inhabitants</strong><small>Original characters · basic needs · rule-based ecology</small></div><span class="roadmap-status">DONE</span></div>
+          <div class="roadmap-item active"><span class="roadmap-version">v0.4</span><div><strong>NCA simulation core</strong><small>Shared neural rule · local state channels · replayable runs</small></div><span class="roadmap-status">CURRENT</span></div>
           <div class="roadmap-item"><span class="roadmap-version">v0.5–0.8</span><div><strong>Intelligence, learning, and public beta</strong><small>LLM · DOTS · sharing · safety · scale</small></div><span class="roadmap-status">PLANNED</span></div>
           <div class="roadmap-item final-milestone"><span class="roadmap-version">v1.0</span><div><strong>Production release</strong><small>Measured capacity · security review · rollback</small></div><span class="roadmap-status">TARGET</span></div>
         </div>
@@ -187,17 +197,17 @@
 
       <section class="closing-section content-width">
         <div class="closing-orbit" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-        <div class="eyebrow"><span class="eyebrow-line"></span> THE WORLD NOW HAS INHABITANTS</div>
+        <div class="eyebrow"><span class="eyebrow-line"></span> LOCAL NEURAL RULES ARE RUNNING</div>
         <h2>Explore the world.<br /><em>Find the details.</em></h2>
-        <p>Watch scripted inhabitants explore, seek food and recover energy. Real learned cellular dynamics and language-driven world creation remain future milestones.</p>
+        <p>Run the NCA field one step at a time or alongside the inhabitants. Training, language-driven world authoring and DOTS integration remain future milestones.</p>
         <a class="button button-primary" href="https://github.com/sohan-a11y/DOTS-Living-World" target="_blank" rel="noreferrer">Follow the project on GitHub <span aria-hidden="true">↗</span></a>
       </section>
     </main>
 
     <footer class="site-footer content-width">
       <a class="footer-brand" href="#top">DOTS / LIVING WORLDS</a>
-      <span>v0.3 VOXEL ECOLOGY</span>
-      <span>RULE-BASED AGENTS · NCA CORE PLANNED FOR v0.4</span>
+      <span>v0.4 NCA CORE</span>
+      <span>SHARED NEURAL RULE · INITIALIZED WEIGHTS, NOT TRAINED</span>
     </footer>
     <script type="module" src="/src/main.js"></script>
   </body>

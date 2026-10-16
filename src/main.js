@@ -1,5 +1,6 @@
 import { createWorld, getTile, terrainDescription } from "./world.js";
 import { createAgents, stepAgents } from "./agents.js";
+import { createNcaField, stepNca, countActiveCells } from "./nca.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("world-field");
@@ -8,17 +9,23 @@ const playButton = $("preview-toggle");
 const presetInput = $("world-preset");
 const seedInput = $("world-seed");
 const speedInput = $("world-speed");
+const ncaOverlayInput = $("nca-overlay");
+const ncaResetButton = $("nca-reset");
+const ncaStepButton = $("nca-step");
 const metrics = {
   preset: $("metric-preset"), seed: $("metric-seed"), tiles: $("metric-tiles"),
   water: $("metric-water"), resources: $("metric-resources"), zoom: $("metric-zoom"),
   title: $("world-state-title"), subtitle: $("world-state-subtitle"),
   coordinate: $("tile-coordinate"), tileName: $("tile-name"), tileDescription: $("tile-description"),
-  inhabitants: $("metric-inhabitants"), tick: $("metric-tick")
+  inhabitants: $("metric-inhabitants"), tick: $("metric-tick"),
+  ncaCells: $("metric-nca-cells"), ncaTick: $("metric-nca-tick"), ncaStatus: $("metric-nca-status")
 };
 
 if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   let world = createWorld();
   let agents = createAgents(world);
+  let ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed });
+  let ncaOverlayVisible = ncaOverlayInput ? ncaOverlayInput.checked : true;
   let simulationTick = 0;
   let simulationAccumulator = 0;
   let selectedAgentId = null;
@@ -59,6 +66,9 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     metrics.zoom.textContent = Math.round(camera.zoom * 100) + "%";
     metrics.inhabitants.textContent = String(agents.length);
     metrics.tick.textContent = simulationTick.toLocaleString();
+    metrics.ncaCells.textContent = countActiveCells(ncaField).toLocaleString();
+    metrics.ncaTick.textContent = ncaField.tick.toLocaleString();
+    metrics.ncaStatus.textContent = ncaOverlayVisible ? "OVERLAY ON" : "OVERLAY OFF";
     const selectedAgent = agents.find(agent => agent.id === selectedAgentId);
     if (selectedAgent) {
       metrics.title.textContent = "Inhabitant selected";
@@ -125,6 +135,23 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
         ctx.fillStyle = colors.resource;
         ctx.fillRect(cx - r, cy - r * 1.5, r * 2, r * 3);
         ctx.fillRect(cx - r * 1.5, cy - r, r * 3, r * 2);
+      }
+    }
+    if (ncaOverlayVisible) {
+      for (let y = 0; y < ncaField.height; y++) {
+        for (let x = 0; x < ncaField.width; x++) {
+          const index = (y * ncaField.width + x) * ncaField.channels;
+          const alive = ncaField.state[index];
+          if (alive < 0.025) continue;
+          const pigment = ncaField.state[index + 1], nutrient = ncaField.state[index + 2], signal = ncaField.state[index + 3];
+          const px = left + x * scale, py = top + y * scale;
+          if (px + scale < 0 || py + scale < 0 || px > rect.width || py > rect.height) continue;
+          const red = Math.round(64 + pigment * 94), green = Math.round(143 + signal * 95), blue = Math.round(171 + nutrient * 78);
+          const alpha = Math.min(0.84, 0.18 + alive * 0.54 + signal * 0.12);
+          ctx.fillStyle = `rgba(${red},${green},${blue},${alpha})`;
+          ctx.fillRect(px + 0.6, py + 0.6, Math.max(0.8, scale - 1.2), Math.max(0.8, scale - 1.2));
+          if (scale >= 7) { ctx.strokeStyle = `rgba(220,255,251,${Math.min(0.75, alive * 0.4)})`; ctx.lineWidth = 0.5; ctx.strokeRect(px + 1, py + 1, Math.max(0, scale - 2), Math.max(0, scale - 2)); }
+        }
       }
     }
     if (scale > 5) {
@@ -218,6 +245,7 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     while (simulationAccumulator >= 420) {
       simulationAccumulator -= 420;
       agents = stepAgents(world, agents);
+      ncaField = stepNca(ncaField, { updateRate: 0.55 });
       simulationTick += 1;
       stepped = true;
     }
@@ -256,6 +284,8 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     seedInput.setCustomValidity("");
     world = createWorld({ seed, presetId: presetInput.value });
     agents = createAgents(world);
+    ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed });
+    ncaOverlayVisible = ncaOverlayInput ? ncaOverlayInput.checked : true;
     simulationTick = 0;
     simulationAccumulator = 0;
     selectedAgentId = null;
@@ -308,6 +338,9 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   $("zoom-out").addEventListener("click", () => zoomCenter(1 / 1.2));
   $("reset-view").addEventListener("click", () => { camera = { x: 0, y: 0, zoom: 1 }; updateInspector(); requestDraw(); });
   speedInput.addEventListener("change", requestDraw);
+  if (ncaOverlayInput) ncaOverlayInput.addEventListener("change", () => { ncaOverlayVisible = ncaOverlayInput.checked; updateInspector(); requestDraw(); });
+  if (ncaResetButton) ncaResetButton.addEventListener("click", () => { ncaField = createNcaField({ width: world.width, height: world.height, seed: world.seed }); updateInspector(); requestDraw(); });
+  if (ncaStepButton) ncaStepButton.addEventListener("click", () => { ncaField = stepNca(ncaField, { updateRate: 1 }); updateInspector(); requestDraw(); });
   canvas.addEventListener("pointerdown", event => {
     if (event.button !== 0) return;
     canvas.setPointerCapture(event.pointerId);

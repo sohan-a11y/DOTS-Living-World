@@ -49,15 +49,16 @@ A public web experience where visitors can watch a living artificial world with 
 **Acceptance gate:** met for the prototype's scripted policies and inspectability. This is not a trained NCA, LLM-driven agent, or evidence of consciousness.
 
 ### v0.4 — NCA simulation core
-**Goal:** implement actual Neural Cellular Automata, not a visual effect labelled NCA.
+**Status: implemented as an untrained local runtime prototype.**
 
-- Define cell-state channels, neighborhood perception, a shared learned update rule, alive masks, update frequency, seeding, and deterministic run configuration.
-- Start with a bounded 2D or 2.5D NCA field integrated into the 3D voxel world. Only add volumetric 3D NCA if benchmarks justify the cost.
-- Run the simulation off the UI thread; use WebGPU where supported and a tested fallback path where practical.
-- Add checkpoint/replay for seeds and simulation parameters.
-- Separate the NCA field from the humanoid actor controller: NCA can influence environment and local signals, while agents use an explicit policy to move.
+- Five bounded state channels: alive, pigment, nutrient, signal, and age.
+- Eight-neighbor perception per channel (center, local mean, and Laplacian response), fed to a shared 15-feature → 12-unit tanh hidden layer → 5-channel update network.
+- Deterministically initialized network parameters with a stable growth prior, plus a reproducible per-cell update mask.
+- Integrated 2D field overlay, show/hide control, single-step button, reset-to-seed, active-cell/tick metrics, and seed-based replay.
+- Kept the NCA field separate from scripted voxel-agent controllers.
+- Network weights have **not been trained**; no training loop, target organism, or learned behavior claim is included. Heavy use should be moved to a worker after profiling on representative devices.
 
-**Acceptance gate:** unit tests validate update rules, deterministic seed replay is documented, target behavior is measured against a baseline, and the UI stays responsive on representative devices.
+**Acceptance gate:** bounded state, local neural updates, deterministic replay, inspectable controls, and unit tests are implemented. Training, visual acceptance in real browsers, and performance profiling remain future work.
 
 ### v0.5 — LLM world builder
 **Goal:** let users describe a world and configure it safely.

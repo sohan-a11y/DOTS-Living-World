@@ -4,22 +4,24 @@
 
 This repository is the product source of truth. The public experience will let visitors explore a visually rich world with original voxel-style inhabitants, then gradually add natural-language world authoring, NCA-driven local dynamics, and source-tracked DOTS learning.
 
-## Current status: v0.3 — voxel inhabitants and rule-based ecology
+## Current status: v0.4 — NCA simulation core
 
-**Current milestone and public deployment:** v0.3 — voxel inhabitants and rule-based ecology. The production alias [dots-living-world.vercel.app](https://dots-living-world.vercel.app/) now points to a Vercel `READY` deployment containing the v0.3 frontend, including enlarged high-contrast inhabitant sprites and phone-friendly selection targets. This is an early prototype, not the v1.0 production product.
+**Current milestone:** v0.4 — NCA simulation core. The frontend includes a shared neural cellular update network, deterministic initialization, bounded five-channel state, cell overlay controls, one-step execution, reset, and replayable test runs. This is an untrained NCA runtime, not a trained organism or production AI. The public deployment is updated manually and should be verified on-device before relying on it.
 
-The v0.3 inhabitant prototype is now the current milestone:
+The v0.4 NCA core is now the current milestone:
 
 - Responsive dark visual identity and product landing page.
 - Three interactive deterministic terrain presets: Moss Basin, Crystal Ridge, and Ashen Frontier.
 - Pan/zoom camera, keyboard navigation, reset view, pause/resume, visual pulse speed, and seeded world regeneration.
 - Selectable terrain tiles with an inspector panel and live terrain metrics.
 - Architecture cards that distinguish LLM, DOTS, and NCA responsibilities.
+- NCA channel state and local neighborhood perception, shared 15-feature → 12-hidden-unit → 5-output neural update rule, deterministic per-cell update mask, and explicit initialized weights.
+- NCA overlay toggle, single-step control, reset from the world seed, active-cell and tick metrics.
 - No API keys, external AI calls, accounts, analytics, or personal data collection.
 - Dependency-light app using native HTML, CSS, and JavaScript modules.
 - GitHub Actions checks for syntax, tests, and critical page assets.
 
-The terrain is a procedural preset map and the inhabitants use small scripted policies, not a trained NCA, LLM-driven agent, or evidence of consciousness. The learned NCA runtime remains planned for v0.4, LLM world authoring for v0.5, and DOTS integration for v0.6.
+The NCA executes a shared neural update rule with deterministic initialized weights, but those weights are not trained. It is a real neural cellular computation, not a learned organism; voxel inhabitants still use explicit scripted policies and are not driven by NCA output. Training/evaluation is future work, followed by LLM world authoring (v0.5) and DOTS integration (v0.6).
 
 ## Run locally
 
@@ -41,7 +43,7 @@ and open http://localhost:4173.
 
 ## Hosting separation
 
-An independent Vercel project named `dots-living-world` exists and its deployment alias is `https://dots-living-world.vercel.app/`. It has no custom domains. The current v0.2 deployment was uploaded manually because the Vercel GitHub integration is not installed; pushes to GitHub will not automatically deploy until that integration is connected to this repository. Do not attach `artifex.engineer` or a subdomain to this project.
+An independent Vercel project named `dots-living-world` exists and its deployment alias is `https://dots-living-world.vercel.app/`. It has no custom domains. The v0.4 deployment is uploaded manually. The GitHub integration status should be verified in Vercel Settings → Git before assuming that pushes will deploy automatically. Do not attach `artifex.engineer` or a subdomain to this project.
 
 The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Vercel project are outside this product and must not be changed. See [Hosting Architecture](docs/ARCHITECTURE_AND_HOSTING.md).
 
@@ -52,6 +54,7 @@ The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Ve
 - [v0.1 release notes](docs/RELEASES/v0.1.md).
 - [v0.2 release notes](docs/RELEASES/v0.2.md).
 - [v0.3 release notes](docs/RELEASES/v0.3.md).
+- [v0.4 release notes](docs/RELEASES/v0.4.md).
 
 ## The architecture in one sentence
 

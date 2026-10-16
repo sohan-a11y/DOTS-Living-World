@@ -1,13 +1,13 @@
 {
   "name": "dots-living-world",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "A web-native artificial-world experience powered by NCA, LLMs, and DOTS continual learning.",
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "test": "node --test",
-    "check": "node --check src/main.js && node --check src/field.js && node --check src/world.js && node --check src/agents.js && npm test"
+    "check": "node --check src/main.js && node --check src/field.js && node --check src/world.js && node --check src/agents.js && node --check src/nca.js && npm test"
   },
   "engines": {
     "node": ">=20"
