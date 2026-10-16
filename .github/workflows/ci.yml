@@ -35,7 +35,7 @@ jobs:
           grep -q 'id="tile-description"' index.html
       - name: Assert the v0.2 viewer limitations are clear
         run: |
-          grep -q "not yet a neural cellular automaton" index.html
+          grep -qi "not yet a learned NCA run" index.html
           grep -q "not a Neural Cellular Automaton" src/field.js
       - name: Verify isolated hosting documentation
         run: |
