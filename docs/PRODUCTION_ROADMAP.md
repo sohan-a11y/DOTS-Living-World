@@ -38,14 +38,15 @@ A public web experience where visitors can watch a living artificial world with 
 **Acceptance gate:** visitors can explore a stable demo without signing in or invoking an LLM backend.
 
 ### v0.3 — Voxel inhabitants and ecology
-**Goal:** make the world feel inhabited.
+**Status: implemented as a bounded prototype.**
 
-- Add original blocky humanoid/voxel characters, simple skeleton/animations, names/roles, and readable silhouettes.
-- Add resources, hazards, destinations, and basic needs/energy.
-- Give inhabitants transparent, inspectable behavior policies and event history.
-- Keep original models/materials; do not reuse Minecraft's protected assets or branding.
+- Eight original pixel-block inhabitants with names, roles, and distinct colors, placed reproducibly on land tiles.
+- Basic hunger and energy values, food-seeking/foraging, exploration, and resting through transparent scripted rules.
+- Selectable inhabitants with state, recent event, movement-step count, and coordinates; simulation tick and population count are visible.
+- Deterministic tests cover placement, state bounds, immutable step results, replay, and population limits.
+- Resources/vegetation serve as renewable markers in this prototype; advanced resource depletion, hazards, reproduction, and learned policies are not implemented.
 
-**Acceptance gate:** a short demo visibly shows inhabitants making distinct, explainable choices and responding to environmental changes.
+**Acceptance gate:** met for the prototype's scripted policies and inspectability. This is not a trained NCA, LLM-driven agent, or evidence of consciousness.
 
 ### v0.4 — NCA simulation core
 **Goal:** implement actual Neural Cellular Automata, not a visual effect labelled NCA.

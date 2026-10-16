@@ -28,14 +28,19 @@ jobs:
           test -s src/main.js
           test -s src/field.js
           test -s src/world.js
+          test -s src/agents.js
           test -s tests/world.test.mjs
+          test -s tests/agents.test.mjs
           test -s favicon.svg
           grep -q 'id="world-preset"' index.html
           grep -q 'id="zoom-in"' index.html
           grep -q 'id="tile-description"' index.html
-      - name: Assert the v0.2 viewer limitations are clear
+          grep -q 'id="metric-inhabitants"' index.html
+          grep -q 'id="metric-tick"' index.html
+      - name: Assert the v0.3 and NCA limitations are clear
         run: |
-          grep -qi "not yet a learned NCA run" index.html
+          grep -qi "NCA-driven behavior is not connected yet" index.html
+          grep -qi "scripted policies, not learned AI" index.html
           grep -q "not a Neural Cellular Automaton" src/field.js
       - name: Verify isolated hosting documentation
         run: |

@@ -1,4 +1,5 @@
 import { createWorld, getTile, terrainDescription } from "./world.js";
+import { createAgents, stepAgents } from "./agents.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("world-field");
@@ -11,11 +12,16 @@ const metrics = {
   preset: $("metric-preset"), seed: $("metric-seed"), tiles: $("metric-tiles"),
   water: $("metric-water"), resources: $("metric-resources"), zoom: $("metric-zoom"),
   title: $("world-state-title"), subtitle: $("world-state-subtitle"),
-  coordinate: $("tile-coordinate"), tileName: $("tile-name"), tileDescription: $("tile-description")
+  coordinate: $("tile-coordinate"), tileName: $("tile-name"), tileDescription: $("tile-description"),
+  inhabitants: $("metric-inhabitants"), tick: $("metric-tick")
 };
 
 if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   let world = createWorld();
+  let agents = createAgents(world);
+  let simulationTick = 0;
+  let simulationAccumulator = 0;
+  let selectedAgentId = null;
   let camera = { x: 0, y: 0, zoom: 1 };
   let selected = { x: 32, y: 18 };
   let paused = false;
@@ -51,8 +57,19 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     metrics.water.textContent = world.counts.water.toLocaleString();
     metrics.resources.textContent = world.counts.resources.toLocaleString();
     metrics.zoom.textContent = Math.round(camera.zoom * 100) + "%";
-    metrics.title.textContent = "Preset world ready";
-    metrics.subtitle.textContent = world.preset.name + " · local viewer";
+    metrics.inhabitants.textContent = String(agents.length);
+    metrics.tick.textContent = simulationTick.toLocaleString();
+    const selectedAgent = agents.find(agent => agent.id === selectedAgentId);
+    if (selectedAgent) {
+      metrics.title.textContent = "Inhabitant selected";
+      metrics.subtitle.textContent = selectedAgent.name + " · " + selectedAgent.action;
+      metrics.coordinate.textContent = "x " + selectedAgent.x + " · y " + selectedAgent.y;
+      metrics.tileName.textContent = selectedAgent.name + " · " + selectedAgent.role;
+      metrics.tileDescription.textContent = selectedAgent.event + " Hunger " + Math.round(selectedAgent.hunger * 100) + "%; energy " + Math.round(selectedAgent.energy * 100) + "%; " + selectedAgent.steps + " movement steps.";
+      return;
+    }
+    metrics.title.textContent = "Preset world active";
+    metrics.subtitle.textContent = world.preset.name + " · local rule-based agents";
     const tile = getTile(world, selected.x, selected.y);
     const names = { water: "Water", shore: "Shoreline", moss: "Moss shelf", meadow: "Open meadow", rock: "Rock ridge", crystal: "Crystal outcrop", ash: "Ashen ground" };
     metrics.coordinate.textContent = tile ? "x " + tile.x + " · y " + tile.y : "outside field";
@@ -125,6 +142,33 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
       ctx.fillStyle = "rgba(220,255,232,.09)";
       ctx.fillRect(left + tile.x * scale, top + tile.y * scale, scale, scale);
     }
+    for (const agent of agents) {
+      const cx = left + (agent.x + .5) * scale;
+      const cy = top + (agent.y + .5) * scale;
+      if (cx < -scale || cy < -scale || cx > rect.width + scale || cy > rect.height + scale) continue;
+      const head = Math.max(1.2, scale * .17);
+      const torsoW = Math.max(1.4, scale * .34);
+      const torsoH = Math.max(1.7, scale * .29);
+      const legW = Math.max(1, scale * .12);
+      const topY = cy - scale * .34;
+      ctx.fillStyle = "rgba(0,0,0,.34)";
+      ctx.fillRect(cx - scale * .26, cy + scale * .38, scale * .52, Math.max(1, scale * .09));
+      ctx.fillStyle = agent.color;
+      ctx.fillRect(cx - head / 2, topY, head, head);
+      ctx.fillRect(cx - torsoW / 2, cy - scale * .08, torsoW, torsoH);
+      ctx.fillRect(cx - torsoW * .94, cy - scale * .04, Math.max(1, scale * .11), torsoH * .68);
+      ctx.fillRect(cx + torsoW * .83, cy - scale * .04, Math.max(1, scale * .11), torsoH * .68);
+      ctx.fillRect(cx - legW * 1.35, cy + scale * .18, legW, scale * .21);
+      ctx.fillRect(cx + legW * .35, cy + scale * .18, legW, scale * .21);
+      ctx.fillStyle = "rgba(6,13,11,.65)";
+      ctx.fillRect(cx - head * .2, topY + head * .38, Math.max(.7, head * .16), Math.max(.7, head * .16));
+      if (agent.id === selectedAgentId) {
+        ctx.strokeStyle = "#f2d9a2"; ctx.lineWidth = Math.max(1, scale * .07);
+        ctx.beginPath(); ctx.ellipse(cx, cy + scale * .04, scale * .47, scale * .55, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#f2d9a2"; ctx.font = "9px ui-monospace, monospace"; ctx.textAlign = "center";
+        ctx.fillText(agent.name, cx, topY - 3);
+      }
+    }
   }
 
   function requestDraw() {
@@ -137,8 +181,18 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
   function tick(stamp) {
     if (paused || document.hidden) { raf = 0; return; }
     if (!last) last = stamp;
-    time += Math.min(64, stamp - last) * Number(speedInput.value || 1);
+    const delta = Math.min(64, stamp - last) * Number(speedInput.value || 1);
+    time += delta;
+    simulationAccumulator += delta;
+    let stepped = false;
+    while (simulationAccumulator >= 420) {
+      simulationAccumulator -= 420;
+      agents = stepAgents(world, agents);
+      simulationTick += 1;
+      stepped = true;
+    }
     last = stamp;
+    if (stepped) updateInspector();
     draw(time);
     if (!reducedMotion) raf = requestAnimationFrame(tick);
     else raf = 0;
@@ -171,6 +225,10 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     }
     seedInput.setCustomValidity("");
     world = createWorld({ seed, presetId: presetInput.value });
+    agents = createAgents(world);
+    simulationTick = 0;
+    simulationAccumulator = 0;
+    selectedAgentId = null;
     selected = { x: Math.floor(world.width / 2), y: Math.floor(world.height / 2) };
     camera = { x: 0, y: 0, zoom: 1 };
     time = 0;
@@ -198,7 +256,18 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     const view = transform(rect.width, rect.height);
     const x = Math.floor((clientX - rect.left - view.left) / view.scale);
     const y = Math.floor((clientY - rect.top - view.top) / view.scale);
-    if (getTile(world, x, y)) { selected = { x, y }; updateInspector(); requestDraw(); }
+    const localX = clientX - rect.left;
+    const localY = clientY - rect.top;
+    let picked = null;
+    let pickedDistance = Infinity;
+    for (const agent of agents) {
+      const ax = view.left + (agent.x + .5) * view.scale;
+      const ay = view.top + (agent.y + .18) * view.scale;
+      const distance = Math.hypot(localX - ax, localY - ay);
+      if (distance < view.scale * .52 && distance < pickedDistance) { picked = agent; pickedDistance = distance; }
+    }
+    if (picked) { selectedAgentId = picked.id; selected = { x: picked.x, y: picked.y }; updateInspector(); requestDraw(); return; }
+    if (getTile(world, x, y)) { selectedAgentId = null; selected = { x, y }; updateInspector(); requestDraw(); }
   }
 
   playButton.addEventListener("click", () => paused ? start() : stop());

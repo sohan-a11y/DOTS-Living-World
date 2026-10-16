@@ -246,3 +246,7 @@ h2 { margin: 18px 0 0; font-size: clamp(34px, 4vw, 49px); line-height: 1.08; let
   .speed-field { margin-left: 0; flex: 0 1 90px; }
   .speed-field select { width: 100%; }
 }
+
+/* v0.3 original voxel inhabitants and inspector state */
+.inhabitant-legend { color: #f0c58a; }
+.inhabitant-legend::before { content: ""; display: inline-block; width: 7px; height: 9px; margin-right: 6px; background: #f0c58a; box-shadow: 0 2px 0 #27322b; vertical-align: -1px; }

@@ -4,11 +4,11 @@
 
 This repository is the product source of truth. The public experience will let visitors explore a visually rich world with original voxel-style inhabitants, then gradually add natural-language world authoring, NCA-driven local dynamics, and source-tracked DOTS learning.
 
-## Current status: v0.2 — interactive world viewer
+## Current status: v0.3 — voxel inhabitants and rule-based ecology
 
 **Current Vercel deployment:** [dots-living-world.vercel.app](https://dots-living-world.vercel.app/). Vercel reports the deployment as ready. The site is a v0.2 interactive viewer, not the v1.0 production product.
 
-The v0.2 interactive viewer is now the current milestone:
+The v0.3 inhabitant prototype is now the current milestone:
 
 - Responsive dark visual identity and product landing page.
 - Three interactive deterministic terrain presets: Moss Basin, Crystal Ridge, and Ashen Frontier.
@@ -19,7 +19,7 @@ The v0.2 interactive viewer is now the current milestone:
 - Dependency-light app using native HTML, CSS, and JavaScript modules.
 - GitHub Actions checks for syntax, tests, and critical page assets.
 
-The map is a procedural preset viewer, not a trained NCA or living-agent simulation. The NCA runtime remains planned for v0.4, original voxel inhabitants for v0.3, LLM world authoring for v0.5, and DOTS integration for v0.6.
+The terrain is a procedural preset map and the inhabitants use small scripted policies, not a trained NCA, LLM-driven agent, or evidence of consciousness. The learned NCA runtime remains planned for v0.4, LLM world authoring for v0.5, and DOTS integration for v0.6.
 
 ## Run locally
 
@@ -51,6 +51,7 @@ The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Ve
 - [Architecture and Hosting](docs/ARCHITECTURE_AND_HOSTING.md): browser/runtime boundaries, traffic strategy, and separation from Artifex.
 - [v0.1 release notes](docs/RELEASES/v0.1.md).
 - [v0.2 release notes](docs/RELEASES/v0.2.md).
+- [v0.3 release notes](docs/RELEASES/v0.3.md).
 
 ## The architecture in one sentence
 
