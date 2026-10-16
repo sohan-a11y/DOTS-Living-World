@@ -18,7 +18,8 @@ A dedicated Vercel project without a custom domain avoids changing Artifex DNS o
 
 - Separate Vercel project: `dots-living-world`.
 - Project ID: `prj_J2w6vhYi2MZAiJffovY7l0luUwjy`.
-- Vercel reports the v0.1 deployment as `READY`, with alias `https://dots-living-world.vercel.app/`.
+- The latest successfully published deployment before v0.3 is the v0.2 interactive viewer, with alias `https://dots-living-world.vercel.app/`.
+- The v0.3 source is on GitHub `main` and its CI passes, but it is not live yet: the current deployment session returned a Vercel team-scope authorization error. Resolve access in Vercel and manually redeploy, or connect the GitHub integration as described below.
 - No custom domains are attached. Project SSO protection is configured for Preview deployments only; production is intended to be public.
 - Initial frontend files were uploaded to this project manually. Vercel reported that the GitHub integration must be installed before it can connect the repository, so automatic deployment-on-push is not yet configured.
 
