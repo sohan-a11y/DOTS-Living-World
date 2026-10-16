@@ -145,28 +145,58 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
     for (const agent of agents) {
       const cx = left + (agent.x + .5) * scale;
       const cy = top + (agent.y + .5) * scale;
-      if (cx < -scale || cy < -scale || cx > rect.width + scale || cy > rect.height + scale) continue;
-      const head = Math.max(1.2, scale * .17);
-      const torsoW = Math.max(1.4, scale * .34);
-      const torsoH = Math.max(1.7, scale * .29);
-      const legW = Math.max(1, scale * .12);
-      const topY = cy - scale * .34;
-      ctx.fillStyle = "rgba(0,0,0,.34)";
-      ctx.fillRect(cx - scale * .26, cy + scale * .38, scale * .52, Math.max(1, scale * .09));
-      ctx.fillStyle = agent.color;
-      ctx.fillRect(cx - head / 2, topY, head, head);
-      ctx.fillRect(cx - torsoW / 2, cy - scale * .08, torsoW, torsoH);
-      ctx.fillRect(cx - torsoW * .94, cy - scale * .04, Math.max(1, scale * .11), torsoH * .68);
-      ctx.fillRect(cx + torsoW * .83, cy - scale * .04, Math.max(1, scale * .11), torsoH * .68);
-      ctx.fillRect(cx - legW * 1.35, cy + scale * .18, legW, scale * .21);
-      ctx.fillRect(cx + legW * .35, cy + scale * .18, legW, scale * .21);
-      ctx.fillStyle = "rgba(6,13,11,.65)";
-      ctx.fillRect(cx - head * .2, topY + head * .38, Math.max(.7, head * .16), Math.max(.7, head * .16));
+      const unit = Math.max(1.05, Math.min(1.65, scale / 7));
+      const headSize = 5.2 * unit;
+      const torsoW = 7.2 * unit;
+      const torsoH = 7.5 * unit;
+      const armW = 2.8 * unit;
+      const legW = 2.8 * unit;
+      const groundY = cy + Math.max(2, scale * .22);
+      const topY = groundY - 22 * unit;
+      if (cx < -20 * unit || cy < -26 * unit || cx > rect.width + 20 * unit || cy > rect.height + 12 * unit) continue;
+
+      // Dark badge and colored halo keep characters legible on every terrain palette.
+      ctx.fillStyle = "rgba(3,9,8,.78)";
+      ctx.beginPath();
+      ctx.ellipse(cx, groundY - 10 * unit, 9 * unit, 13 * unit, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = agent.id === selectedAgentId ? "#fff0bd" : agent.color;
+      ctx.globalAlpha = agent.id === selectedAgentId ? 1 : .82;
+      ctx.lineWidth = Math.max(1, unit * .65);
+      ctx.beginPath();
+      ctx.ellipse(cx, groundY - 10 * unit, 9 * unit, 13 * unit, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(0,0,0,.5)";
+      ctx.fillRect(cx - 6 * unit, groundY - 1.5 * unit, 12 * unit, 2.2 * unit);
+
+      // Chunky, original sprite: square head, torso, arms, and two legs.
+      const block = (x, y, w, h, fill) => {
+        ctx.fillStyle = "#07100d";
+        ctx.fillRect(x - .7 * unit, y - .7 * unit, w + 1.4 * unit, h + 1.4 * unit);
+        ctx.fillStyle = fill;
+        ctx.fillRect(x, y, w, h);
+      };
+      block(cx - headSize / 2, topY, headSize, headSize, "#e2c6a0");
+      block(cx - torsoW / 2, topY + 6.1 * unit, torsoW, torsoH, agent.color);
+      block(cx - torsoW / 2 - armW - .6 * unit, topY + 6.5 * unit, armW, 6.5 * unit, agent.color);
+      block(cx + torsoW / 2 + .6 * unit, topY + 6.5 * unit, armW, 6.5 * unit, agent.color);
+      block(cx - 3.2 * unit, topY + 14.2 * unit, legW, 6.5 * unit, "#c1d3c7");
+      block(cx + .6 * unit, topY + 14.2 * unit, legW, 6.5 * unit, "#c1d3c7");
+      ctx.fillStyle = "#13221b";
+      ctx.fillRect(cx - 1.2 * unit, topY + 2.1 * unit, .9 * unit, .9 * unit);
+      ctx.fillRect(cx + .4 * unit, topY + 2.1 * unit, .9 * unit, .9 * unit);
+
       if (agent.id === selectedAgentId) {
-        ctx.strokeStyle = "#f2d9a2"; ctx.lineWidth = Math.max(1, scale * .07);
-        ctx.beginPath(); ctx.ellipse(cx, cy + scale * .04, scale * .47, scale * .55, 0, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = "#f2d9a2"; ctx.font = "9px ui-monospace, monospace"; ctx.textAlign = "center";
-        ctx.fillText(agent.name, cx, topY - 3);
+        ctx.fillStyle = "#f2d9a2";
+        ctx.font = "bold 10px ui-monospace, monospace";
+        ctx.textAlign = "center";
+        const label = agent.name;
+        const labelWidth = ctx.measureText(label).width + 10;
+        ctx.fillStyle = "rgba(5,12,10,.94)";
+        ctx.fillRect(cx - labelWidth / 2, topY - 17, labelWidth, 13);
+        ctx.fillStyle = "#f2d9a2";
+        ctx.fillText(label, cx, topY - 7);
       }
     }
   }
@@ -264,7 +294,7 @@ if (canvas && ctx && playButton && presetInput && seedInput && speedInput) {
       const ax = view.left + (agent.x + .5) * view.scale;
       const ay = view.top + (agent.y + .18) * view.scale;
       const distance = Math.hypot(localX - ax, localY - ay);
-      if (distance < view.scale * .52 && distance < pickedDistance) { picked = agent; pickedDistance = distance; }
+      if (distance < Math.max(13, view.scale * .95) && distance < pickedDistance) { picked = agent; pickedDistance = distance; }
     }
     if (picked) { selectedAgentId = picked.id; selected = { x: picked.x, y: picked.y }; updateInspector(); requestDraw(); return; }
     if (getTile(world, x, y)) { selectedAgentId = null; selected = { x, y }; updateInspector(); requestDraw(); }

@@ -77,9 +77,9 @@
             </div>
             <div class="canvas-wrap">
               <canvas id="world-field" aria-label="Interactive world map with deterministic terrain and original voxel inhabitants. Drag to pan, zoom with controls, and select a tile or inhabitant to inspect it." role="img" tabindex="0"></canvas>
-              <div class="canvas-top-label">WORLD MAP <span>LOCAL PRESET / NO BACKEND</span></div>
+              <div class="canvas-top-label">WORLD MAP <span>8 INHABITANTS · SCRIPTED ECOLOGY</span></div>
               <div class="canvas-bottom">
-                <span>DRAG TO PAN · WHEEL TO ZOOM · CLICK AN INHABITANT OR TILE</span>
+                <span>DRAG TO PAN · TAP A CHARACTER TO INSPECT</span>
                 <button class="preview-toggle" id="preview-toggle" type="button" aria-pressed="false">Pause field <span aria-hidden="true">Ⅱ</span></button>
               </div>
             </div>
@@ -110,7 +110,8 @@
               <span><i class="legend legend-mint"></i> Moss / lowlands</span>
               <span><i class="legend legend-amber"></i> Resource nodes</span>
               <span><i class="legend legend-cyan"></i> Water / crystal</span>
-              <span class="disclaimer">Preset map · no NCA weights loaded</span>
+              <span class="inhabitant-legend">Voxel inhabitants</span>
+              <span class="disclaimer">Scripted ecology · no NCA weights loaded</span>
             </div>
           </article>
 
@@ -128,9 +129,9 @@
             <div class="tile-inspector" aria-live="polite">
               <div class="tile-inspector-head"><span>SELECTED TILE / INHABITANT</span><span id="tile-coordinate">x 32 · y 18</span></div>
               <strong id="tile-name">Select a tile</strong>
-              <p id="tile-description">Click or tap any visible tile to inspect its terrain and local features.</p>
+              <p id="tile-description">Tap a glowing block-style character to inspect its needs and behavior, or tap an empty tile to inspect terrain.</p>
             </div>
-            <div class="inspector-callout"><span class="callout-mark">↗</span><p>The inhabitants use small scripted rules with visible hunger, energy and event notes. NCA-driven behavior is not connected yet; that remains planned for v0.4.</p></div>
+            <div class="inspector-callout"><span class="callout-mark">↗</span><p>Glowing block-style inhabitants are visible on the map. Tap a character for its hunger, energy and latest event. Behaviors are scripted; NCA-driven behavior remains planned for v0.4.</p></div>
             <a href="#roadmap" class="inspector-link">See build sequence <span>→</span></a>
           </aside>
         </div>
