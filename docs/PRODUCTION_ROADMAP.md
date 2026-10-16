@@ -27,13 +27,13 @@ A public web experience where visitors can watch a living artificial world with 
 
 **Acceptance gate:** the site builds reproducibly, works on mobile and desktop, automated checks pass, and the Artifex repo/domain remains untouched.
 
-### v0.2 — Public world viewer
-**Goal:** first visually meaningful page.
+### v0.2 — Interactive world viewer
+**Status: implemented in the v0.2 milestone build.**
 
-- Add the world viewport, camera controls, zoom, pause/resume, reset, speed controls, and a readable event/metric panel.
-- Add a small deterministic demo world with preset seeds.
-- Make world rendering resilient to resize and tab visibility changes.
-- Add reduced-motion behavior and graceful fallback when GPU features are unavailable.
+- Interactive browser-rendered terrain with deterministic presets: Moss Basin, Crystal Ridge, and Ashen Frontier.
+- Pan/zoom camera, keyboard navigation, reset view, pause/resume, visual pulse-speed selection, and reproducible seed regeneration.
+- Selected-tile inspection and live world metrics.
+- Runs locally in the browser with no LLM/DOTS backend dependency. It is not yet a trained NCA or living-agent simulator.
 
 **Acceptance gate:** visitors can explore a stable demo without signing in or invoking an LLM backend.
 

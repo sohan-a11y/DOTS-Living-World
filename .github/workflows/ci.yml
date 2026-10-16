@@ -27,8 +27,13 @@ jobs:
           test -s styles.css
           test -s src/main.js
           test -s src/field.js
+          test -s src/world.js
+          test -s tests/world.test.mjs
           test -s favicon.svg
-      - name: Assert the v0.1 demo is clearly labelled
+          grep -q 'id="world-preset"' index.html
+          grep -q 'id="zoom-in"' index.html
+          grep -q 'id="tile-description"' index.html
+      - name: Assert the v0.2 viewer limitations are clear
         run: |
           grep -q "not yet a neural cellular automaton" index.html
           grep -q "not a Neural Cellular Automaton" src/field.js
