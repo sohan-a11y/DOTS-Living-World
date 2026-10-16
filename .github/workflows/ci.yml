@@ -1,0 +1,38 @@
+name: DOTS Living Worlds CI
+
+on:
+  push:
+    branches: [main, "release/**", "feature/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax and run tests
+        run: npm run check
+      - name: Verify production entry points
+        run: |
+          test -s index.html
+          test -s styles.css
+          test -s src/main.js
+          test -s src/field.js
+          test -s favicon.svg
+      - name: Assert the v0.1 demo is clearly labelled
+        run: |
+          grep -q "not yet a neural cellular automaton" index.html
+          grep -q "not a Neural Cellular Automaton" src/field.js
+      - name: Verify isolated hosting documentation
+        run: |
+          grep -q "do not attach" README.md
+          grep -q "sohan-a11y.github.io" docs/ARCHITECTURE_AND_HOSTING.md

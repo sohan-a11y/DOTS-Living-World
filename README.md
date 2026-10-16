@@ -1,32 +1,56 @@
 # DOTS Living Worlds
 
-**A public, interactive artificial-world experience powered by Neural Cellular Automata (NCA), an LLM, and DOTS continual learning.**
+**A web-native artificial-world experience built around Neural Cellular Automata (NCA), an LLM, and DOTS continual learning.**
 
-The goal is to let visitors enter a visually rich world, watch original voxel-style humanoid inhabitants interact with their environment, and eventually create or teach new world behaviors through natural language.
+This repository is the product source of truth. The public experience will let visitors explore a visually rich world with original voxel-style inhabitants, then gradually add natural-language world authoring, NCA-driven local dynamics, and source-tracked DOTS learning.
 
-## Product principles
+## v0.1 status
 
-- **NCA is the local dynamics engine.** Cells update from neighborhood state using a learned local rule. It is responsible for self-organizing spatial behavior, not language understanding.
-- **The LLM is the world-authoring interface.** It translates user requests into a constrained, validated world specification and proposes experiments. It must not generate code that is executed directly.
-- **DOTS is the persistent knowledge layer.** It tracks learnable knowledge units and supports controlled source-specific removal under its design assumptions. The product must distinguish DOTS-owned information from facts already present in the base model and from behavior learned by an NCA.
-- **Voxel inhabitants are original characters.** Use a blocky, Minecraft-like visual language without copying Minecraft characters, textures, logos, or proprietary assets.
-- **Public browsing should be cheap.** Static assets and the main simulation should run in the visitor's browser where feasible. LLM and DOTS operations must be rate-limited and handled by a separate backend.
-- **Security and privacy by design.** Do not share one user's private learning ledger with another user by default.
+The first web foundation is being established:
 
-## Hosting isolation
+- Responsive dark visual identity and product landing page.
+- Animated procedural field preview, explicitly labelled as an illustration rather than a running NCA.
+- Architecture cards that distinguish LLM, DOTS, and NCA responsibilities.
+- No API keys, external AI calls, accounts, analytics, or personal data collection.
+- Dependency-light app using native HTML, CSS, and JavaScript modules.
+- GitHub Actions checks for syntax, tests, and critical page assets.
 
-The source of truth for this product is this repository only. Deploy it as a separate Vercel project connected only to this repository, using its separate default `.vercel.app` hostname. Do not attach `artifex.engineer` or any Artifex subdomain without a separate explicit decision.
+**This is not yet the NCA engine or the final public simulator.** Milestones v0.2 to v1.0 add the real viewer, original voxel inhabitants, tested NCA dynamics, LLM world authoring, DOTS integration, sharing, scale controls, and production hardening in sequence.
 
-Do not modify `sohan-a11y/sohan-a11y.github.io`, its deployment workflow, CNAME, DNS, or project settings. GitHub Pages is not the chosen default because the Artifex user-site custom domain can affect project-site URL behavior.
+## Run locally
 
-Hosting and production choices are documented in [the architecture plan](docs/ARCHITECTURE_AND_HOSTING.md).
+Requires Node.js 20 or newer. No package installation is required.
+
+```bash
+npm test
+npm run check
+npm run dev
+```
+
+Then open the local URL printed by the static development server. If you do not have a static file server, use:
+
+```bash
+python -m http.server 4173
+```
+
+and open http://localhost:4173.
+
+## Hosting separation
+
+Deploy this repository to an independent Vercel project named `dots-living-world` (if available) and keep the default Vercel hostname. Do not attach `artifex.engineer` or a subdomain to this project.
+
+The existing repository `sohan-a11y/sohan-a11y.github.io`, its CNAME, DNS and Vercel project are outside this product and must not be changed. See [Hosting Architecture](docs/ARCHITECTURE_AND_HOSTING.md).
 
 ## Release plan
 
-We plan **9 milestone versions** from v0.1 to v1.0, with **18 planned milestone build artifacts** (one Preview build and one Verified Candidate build per version). CI runs on individual commits and pull requests will add more test builds, so 18 is a planning baseline, not a cap on CI executions.
+- [Production Roadmap](docs/PRODUCTION_ROADMAP.md): nine planned versions and eighteen milestone build artifacts.
+- [Architecture and Hosting](docs/ARCHITECTURE_AND_HOSTING.md): browser/runtime boundaries, traffic strategy, and separation from Artifex.
+- [v0.1 release notes](docs/RELEASES/v0.1.md).
 
-See [Production Roadmap](docs/PRODUCTION_ROADMAP.md) for version-by-version scope, acceptance gates, and release criteria.
+## The architecture in one sentence
 
-## Current status
+The **LLM** interprets goals, **DOTS** stores and tracks eligible persistent language-model updates, and the **NCA** executes local cellular dynamics. These are distinct subsystems with different capabilities and deletion guarantees.
 
-Planning baseline only. The application has not been implemented or deployed yet. Each version should be built, tested, and reviewed separately before moving to the next milestone.
+## Original visual assets and attribution
+
+The block/voxel visual language will use original models, shapes, and materials. This project does not use Minecraft branding, official textures, or proprietary character assets.
